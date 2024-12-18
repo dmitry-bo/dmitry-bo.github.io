@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta
@@ -51,6 +51,7 @@
     const bgColor = '#062';
     const CAMOMILE_FLOWER_TYPE = 'camomile';
     const LIKE_URL = 'https://qrco.de/dmytro-bo-like';
+    const BLACK_BUTTON_RENDER_MARKER = Symbol('black_button_render');
     const AUTO_RENDER_MARKER = Symbol('auto_render');
     const PETAL_FALL_MARKER = Symbol('petal_fall');
 
@@ -66,6 +67,7 @@ html, body {
   -moz-user-select: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  box-sizing: border-box;
 }
 
 body::after {
@@ -542,12 +544,6 @@ body::after {
         this.element = E('span', { className, style }, params.flower.element);
       }
 
-      Flower.dropPetal = function(element) {
-        const deg = Number(element.style.transform.replace(/\D/g, '')) || 0;
-        const newDeg = deg > 0 && deg < 180 ? deg + 180 : deg - 180;
-
-        S(element, { zIndex: 2, transform: `rotate(${newDeg}deg)`, top: '100vh', pointerEvents: 'none' });
-      };
       function Flower(params) {
         const colorMod = params.color;
         const edgedMod = params.edged === true || (params.edged !== false && rnd(1)) ? 'edged' : '';
@@ -594,8 +590,8 @@ body::after {
       Flower.prototype.restorePetals = function(params) {
         const petals = Array.apply(null, Array(params.petals));
         petals.reduce(
-                (q, _, index) => q.Q(() => petals[index] = this.generatePetal(params, index), 20),
-                Q(() => {}),
+          (q, _, index) => q.Q(() => petals[index] = this.generatePetal(params, index), 20),
+          Q(() => {}),
         );
 
         return petals;
@@ -616,8 +612,8 @@ body::after {
         this.autoRender = false;
         this.element = E('div', { className: 'field' });
         this.parentElement = parentElement;
-        this.width = this.parentElement?.offsetWidth;
-        this.height = this.parentElement?.offsetHeight;
+        this.width = 0;
+        this.height = 0;
         this.flowers = [];
 
         window.addEventListener('click', e => {
@@ -625,7 +621,10 @@ body::after {
           const parentClass = e.target.parentElement && e.target.parentElement.className;
 
           if (typeof targetClass === 'string' && targetClass.indexOf('petal') >= 0 && typeof parentClass === 'string' && parentClass.indexOf('clickable') >= 0) {
-            Flower.dropPetal(e.target);
+            const deg = Number(e.target.style.transform.replace(/\D/g, '')) || 0;
+            const newDeg = deg > 0 && deg < 180 ? deg + 180 : deg - 180;
+
+            S(e.target, { zIndex: 2, transform: `rotate(${newDeg}deg)`, top: '100vh', pointerEvents: 'none' });
           }
         });
         window.addEventListener('resize', () => {
@@ -633,12 +632,16 @@ body::after {
           resizeDebounce = setTimeout(() => this.resizeHandler(), 300);
         });
       }
+
+      Field.prototype.updateSize = function() {
+        this.width = this.parentElement?.offsetWidth ?? 0;
+        this.height = this.parentElement?.offsetHeight ?? 0
+      };
       Field.prototype.resizeHandler = function() {
         const oldWidth = this.width;
         const oldHeight = this.height;
 
-        this.width = this.parentElement?.offsetWidth;
-        this.height = this.parentElement?.offsetHeight;
+        this.updateSize();
 
         const growWidth = oldWidth < this.width;
         const growHeight = oldHeight < this.height;
@@ -715,11 +718,11 @@ body::after {
         return this.flowers.every(flower => {
           const halfFlower = flower.size / 2;
           const distance = flower.type === params.type || flower.color === params.color
-                  ? halfFlower + halfSize
-                  : Math.max(halfFlower, halfSize);
+            ? halfFlower + halfSize
+            : Math.max(halfFlower, halfSize);
 
           return Math.abs(params.x + halfSize - flower.x - halfFlower) > distance
-                  || Math.abs(params.y + halfSize - flower.y - halfFlower) > distance;
+            || Math.abs(params.y + halfSize - flower.y - halfFlower) > distance;
         });
       };
       Field.prototype.createFlowers = function(customRect) {
@@ -727,13 +730,13 @@ body::after {
         const fillArea = (fillRect.right - fillRect.left) * (fillRect.bottom - fillRect.top);
 
         FLOWER_KEYS
-                .sort((keyA, keyB) => FLOWERS[keyB].sizes[1] - FLOWERS[keyA].sizes[1])
-                .forEach(key => {
-                  const config = FLOWERS[key];
-                  const flowerMaxArea = Math.pow(config.sizes[1], 2);
-                  const limit = Math.round(fillArea * (config.density || 1) / flowerMaxArea);
-                  this.fillFlowers(key, limit, fillRect);
-                });
+          .sort((keyA, keyB) => FLOWERS[keyB].sizes[1] - FLOWERS[keyA].sizes[1])
+          .forEach(key => {
+            const config = FLOWERS[key];
+            const flowerMaxArea = Math.pow(config.sizes[1], 2);
+            const limit = Math.round(fillArea * (config.density || 1) / flowerMaxArea);
+            this.fillFlowers(key, limit, fillRect);
+          });
       };
       Field.prototype.cropFlowers = function () {
         this.flowers = this.flowers.filter(flower => {
@@ -743,26 +746,27 @@ body::after {
         });
       };
       Field.prototype.render = function() {
+        this.updateSize();
         this.createFlowers();
         this.parentElement.appendChild(this.element);
       };
       Field.prototype.repaint = function() {
         this.clearFlowersQueue()
-                .Q(() => {
-                  this.createFlowers();
-                  this.setAutoRender(true);
-                });
+          .Q(() => {
+            this.createFlowers();
+            this.setAutoRender(true);
+          });
       };
       Field.prototype.clearFlowersQueue = function() {
         this.setAutoRender(false);
         this.flowers.forEach(flower => flower.rendered = true);
 
         return Array.apply(null, Array(this.flowers.length)).reduce(
-                q => q.Q(() => {
-                  const flower = this.flowers.splice(rnd(this.flowers.length - 1), 1)[0];
-                  if (flower) { flower.element.remove(); }
-                }, 0),
-                Q(() => {}, 0),
+          q => q.Q(() => {
+            const flower = this.flowers.splice(rnd(this.flowers.length - 1), 1)[0];
+            if (flower) { flower.element.remove(); }
+          }, 0),
+          Q(() => {}, 0),
         ).Q(() => this.flowers = []);
       };
       Field.prototype.renderFlowers = function(renderCount) {
@@ -789,7 +793,7 @@ body::after {
         }
 
         bunch.filter(flower => !flower.rendered)
-                .reduce((q, flower) => q.Q(() => flower.render(), renderCount || 0), Q(() => {}));
+          .reduce((q, flower) => q.Q(() => flower.render(), renderCount || 0), Q(() => {}));
       };
       Field.prototype.setAutoRender = function(state) {
         if (this.autoRender !== state) {
@@ -800,7 +804,7 @@ body::after {
       Field.prototype.toggleBlack = function(black) {
         this.black = black;
         Q(() => S(mainWrapper, { backgroundColor: black ? '#111' : bgColor }))
-                .Q(() => toggleClassName(this.element, 'black', black), 1000);
+          .Q(() => toggleClassName(this.element, 'black', black), 1000);
       };
 
       return new Field(mainWrapper);
@@ -816,12 +820,81 @@ body::after {
         'C5': 523.25, 'C#5': 554.36, 'D5': 587.32, 'D#5': 622.26, 'E5': 659.26, 'F5': 698.46, 'F#5': 739.98, 'G5': 784.00, 'G#5': 830.60, 'A5': 880.00, 'A#5': 932.32, 'B5': 987.75,
         'C6': 1046.50, 'C#6': 1108.70, 'D6': 1174.60, 'D#6': 1244.50, 'E6': 1318.50, 'F6': 1396.90, 'F#6': 1480.00, 'G6': 1568.00, 'G#6': 1661.20, 'A6': 1720.00, 'A#6': 1864.60, 'B6': 1975.50,
       };
+
       const lotrNotes = {
         tracks: [
           [
             /* LotR */
+            { R: 2.5, T: 'triangle', G: 0.2, F: 0.1 },
+            { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'D3', o: 3 / 8, g: 0.1  },
+            { n: 'A3', o: 3 / 8, g: 0.1  },
+            { n: 'D4', l: 3 / 8 },
+            { n: 'D4', l: 1 / 16 },
+            { n: 'D4', l: 1 / 16 },
+            /*{ n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'C3', o: 3 / 8, g: 0.1  },
+            { n: 'B#3', o: 3 / 8, g: 0.1  },
+            { n: 'C4', l: 3 / 8 },
+            { n: 'C4', l: 1 / 16 },
+            { n: 'C4', l: 1 / 16 },
+            { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 },
+            { n: 'D3', o: 3 / 4, g: 0.1  },
+            { n: 'A3', o: 3 / 4, g: 0.1  },
+            { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
+            { l: 1 / 8 },
+            { n: 'G4', l: 1 / 16 },
+            { n: 'A4', l: 1 / 16 },
+            { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'A#3', o: 3 / 8 },
+            { n: 'A#4', l: 3 / 8, g: 0.1 },
+            { n: 'A4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16 },
+            { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'F3', o: 3 / 8, g: 0.1 },
+            { n: 'F4', l: 3 / 8 },
+            { n: 'G4', l: 1 / 16 },
+            { n: 'A4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'G2', t: 'sine', o: 1, g: 0.3 },
+            { n: 'G3', o: 1 / 2, g: 0.1 },
+            { n: 'G4', l: 1 / 2 },
+            { n: 'F4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4 },
+            { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'D3', o: 3 / 4, g: 0.1  },
+            { n: 'A3', o: 3 / 4, g: 0.1  },
+            { n: 'D4', l: 3 / 8 },
+            { n: 'D4', l: 1 / 16 },
+            { n: 'D4', l: 1 / 16 },
+            { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'C3', o: 3 / 8, g: 0.1  },
+            { n: 'B#3', o: 3 / 8, g: 0.1  },
+            { n: 'C4', l: 3 / 8 },
+            { n: 'C4', l: 1 / 16 },
+            { n: 'C4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 },
+            { n: 'D3', o: 3 / 4, g: 0.1  },
+            { n: 'A3', o: 3 / 4, g: 0.1  },
+            { n: 'D4', l: 3 / 4 },
+            { l: 1 / 8 },
+            { n: 'G4', l: 1 / 16 },
+            { n: 'A4', l: 1 / 16 },
+            { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 },
+            { n: 'A#3', o: 3 / 8 },
+            { n: 'A#4', l: 3 / 8 },
+            { n: 'A4', l: 1 / 16 },
+            { n: 'A#4', l: 1 / 16 },
+            { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 },
+            { n: 'C4', o: 3 / 8, i: AUTO_RENDER_MARKER },
+            { n: 'C5', l: 3 / 8 },
+            { n: 'A#4', l: 1 / 16 },
+            { n: 'C5', l: 1 / 16 },
+            { n: 'D3', t: 'sine', o: 2, g: 0.1 },
+            { n: 'D4', o: 3 / 2 },
+            { n: 'D5', l: 1 },
+
             { R: 2.5, G: 0.2, F: 0.5, T: 'sine' },
-            { n: 'D4', l: 1 / 8 },
+            { n: 'D4', l: 1 / 8, i: BLACK_BUTTON_RENDER_MARKER },
             { n: 'E4', l: 1 / 8 },
             { n: 'F#4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 },
@@ -829,7 +902,7 @@ body::after {
             { n: 'E4', l: 1 / 8 },
             { n: 'D4', l: 3 / 16 },
             { n: 'E4', l: 1 / 16 },
-            { n: 'D4', l: 3 / 4 },
+            { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 8 },
             { n: 'A4', l: 1 / 8 },
@@ -850,7 +923,7 @@ body::after {
             { n: 'E4', l: 1 / 8 },
             { n: 'D4', l: 3 / 16 },
             { n: 'E4', l: 1 / 16 },
-            { n: 'D4', l: 3 / 4 },
+            { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 8 },
             { n: 'A4', l: 1 / 8 },
@@ -861,7 +934,7 @@ body::after {
             { n: 'G4', l: 1 / 16 },
             { n: 'F#4', l: 1 / 16 },
             { n: 'E4', l: 1 / 2 },
-            { n: 'D4', l: 3 / 4, i: AUTO_RENDER_MARKER },
+            { n: 'D4', l: 3 / 4 },
 
             { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 },
             { n: 'D5', l: 1 / 16 },
@@ -876,7 +949,7 @@ body::after {
             { n: 'A5', l: 1 / 8 },
             { n: 'E5', l: 1 / 8 },
             { n: 'D5', l: 1 / 8 },
-            { n: 'E5', l: 1 / 8 },
+            { n: 'E5', l: 1 / 8, i: PETAL_FALL_MARKER },
             { l: 1 / 2 },
 
             { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 },
@@ -1206,8 +1279,8 @@ body::after {
             { n: 'A#4', l: 1 / 16 },
             { n: 'C5', l: 1 / 16 },
             { n: 'D3', t: 'sine', o: 2, g: 0.1 },
-            { n: 'D4', o: 3 / 2},
-            { n: 'D5', l: 1 },
+            { n: 'D4', o: 3 / 2, i: PETAL_FALL_MARKER },
+            { n: 'D5', l: 1 },*/
           ],
         ],
       };
@@ -1225,7 +1298,6 @@ body::after {
         tracks: [
           [
             { R: 1.8, G: 0.2, F: 0.5, T: 'sine' },
-            { l: 2 },
 
             { l: 1 / 2 + 1 / 8 + 1 / 16 },
             { n: 'A4', l: 1 / 16 },
@@ -1243,7 +1315,7 @@ body::after {
             { n: 'A4', l: 1 / 12 },
             { n: 'G4', l: 1 / 12 },
             { n: 'A4', l: 1 / 4 },
-            { n: 'F#4', l: 1 / 4 },
+            { n: 'F#4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1261,7 +1333,7 @@ body::after {
             { n: 'G4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 },
             { n: 'G4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 4 },
             { l: 1 / 4 },
@@ -1276,14 +1348,14 @@ body::after {
 
             { n: 'G4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
-            { n: 'E4', l: 1 / 8 + 1 / 16 },
+            { n: 'E4', l: 1 / 8 + 1 / 16, i: AUTO_RENDER_MARKER },
             { n: 'B4', l: 1 / 16 },
 
             { n: 'A4', l: 1 / 4 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
             { n: 'G4', l: 1 / 16 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
-            { n: 'F#4', l: 1 / 16 },
+            { n: 'F#4', l: 1 / 16, i: PETAL_FALL_MARKER },
             /* 13 */
             { n: 'G4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1302,11 +1374,10 @@ body::after {
             { n: 'G4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 },
             { n: 'G4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 4 + 1 / 8 },
             { n: 'E4', l: 1 / 4 + 1 / 8 },
-
 
             { n: 'G4', l: 1 / 4 + 1 / 8 },
             { n: 'G4', l: 1 / 8 },
@@ -1323,7 +1394,7 @@ body::after {
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
-            { n: 'E4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'C5', l: 1 / 2 },
             { n: 'B4', l: 1 / 8 },
@@ -1344,7 +1415,7 @@ body::after {
             { n: 'G4', l: 1 / 4 + 1 / 8 },
             { n: 'G4', l: 1 / 8 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16, i: PETAL_FALL_MARKER },
             /* 27 */
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 + 1 / 8 },
@@ -1361,7 +1432,7 @@ body::after {
             { n: 'C5', l: 1 / 4 },
             { n: 'B4', l: 1 / 4 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
-            { n: 'A4', l: 1 / 16 },
+            { n: 'A4', l: 1 / 16, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 4 },
             { n: 'F#4', l: 1 / 4 },
@@ -1375,7 +1446,7 @@ body::after {
             { n: 'F#4', l: 1 / 4 },
             /* 34 */
             { n: 'E4', l: 1 / 4 },
-            { l: 1 / 4 + 1 / 4 },
+            { l: 1 / 4 + 1 / 4, i: PETAL_FALL_MARKER },
             /* Volta 35-40 */
             { n: 'B5', o: 1 / 8 + 1 / 16 }, { n: 'B4', l: 1 / 8 + 1 / 16 },
             { n: 'C6', o: 1 / 16 }, { n: 'C5', l: 1 / 16 },
@@ -1389,7 +1460,7 @@ body::after {
             { n: 'C6', o: 1 / 16 }, { n: 'C5', l: 1 / 16 },
             { n: 'D6', o: 1 / 8 + 1 / 16 }, { n: 'D5', l: 1 / 8 + 1 / 16 },
             { n: 'C6', o: 1 / 16 }, { n: 'C5', l: 1 / 16 },
-            { n: 'B5', o: 1 / 4 }, { n: 'B4', l: 1 / 4 },
+            { n: 'B5', o: 1 / 4 }, { n: 'B4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'B5', o: 1 / 2 + 1 / 4 }, { n: 'B4', l: 1 / 2 + 1 / 4 },
 
@@ -1405,7 +1476,7 @@ body::after {
             { n: 'F#5', l: 1 / 2 + 1 / 4 },
             /* 42 */
             { n: 'B#4', l: 0, o: 1 / 2 + 1 / 4 },
-            { n: 'B#5', l: 1 / 2 + 1 / 4 },
+            { n: 'B#5', l: 1 / 2 + 1 / 4, i: PETAL_FALL_MARKER },
             /* Volta 35-40 */
             { n: 'B5', o: 1 / 8 + 1 / 16 }, { n: 'B4', l: 1 / 8 + 1 / 16 },
             { n: 'C6', o: 1 / 16 }, { n: 'C5', l: 1 / 16 },
@@ -1434,7 +1505,7 @@ body::after {
             { n: 'F#4', o: 1 / 4 + 1 / 8 }, { n: 'F#5', l: 1 / 4 + 1 / 8 },
             { n: 'E4', l: 1 / 4 + 1 / 8 },
 
-            { n: 'B4', l: 1 / 4 },
+            { n: 'B4', l: 1 / 4, i: PETAL_FALL_MARKER },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
             { n: 'G4', l: 1 / 16 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
@@ -1452,7 +1523,7 @@ body::after {
 
             { n: 'G4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
-            { n: 'E4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4, i: PETAL_FALL_MARKER },
             /* 48 */
             { n: 'C5', l: 1 / 12 },
             { n: 'B4', l: 1 / 12 },
@@ -1478,7 +1549,7 @@ body::after {
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
-            { n: 'E4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4, i: PETAL_FALL_MARKER },
             /* 54 */
             { n: 'G4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 + 1 / 8 },
@@ -1497,7 +1568,7 @@ body::after {
             { n: 'F#4', l: 1 / 4 + 1 / 8 },
             { n: 'E4', l: 1 / 8 },
 
-            { n: 'G4', l: 1 / 4 },
+            { n: 'G4', l: 1 / 4, i: PETAL_FALL_MARKER },
             { n: 'A4', l: 1 / 4 },
             { n: 'G4', l: 1 / 8 + 1 / 16 },
             { n: 'G4', l: 1 / 16 },
@@ -1511,7 +1582,7 @@ body::after {
             /* 61 */
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
-            { n: 'E4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'B4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 },
@@ -1541,7 +1612,7 @@ body::after {
             { n: 'G4', l: 1 / 4 + 1 / 8 },
             { n: 'G4', l: 1 / 8 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1558,7 +1629,7 @@ body::after {
 
             { n: 'C5', l: 1 / 4 + 1 / 8 },
             { n: 'B4', l: 1 / 8 },
-            { n: 'A4', l: 1 / 4 },
+            { n: 'A4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 4 },
             { n: 'F#4', l: 1 / 4 + 1 / 8 },
@@ -1580,7 +1651,7 @@ body::after {
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 + 1 / 8 },
-            { n: 'E4', l: 1 / 8 },
+            { n: 'E4', l: 1 / 8, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 4 },
             { n: 'A4', l: 1 / 4 + 1 / 8 },
@@ -1597,7 +1668,7 @@ body::after {
 
             { n: 'G4', l: 1 / 4 },
             { n: 'F#4', l: 1 / 4 },
-            { n: 'B4', l: 1 / 4 },
+            { n: 'B4', l: 1 / 4, i: PETAL_FALL_MARKER },
             /* 82 */
             { n: 'B4', l: 1 / 4 + 1 / 8 },
             { n: 'B4', l: 1 / 4 },
@@ -1614,7 +1685,7 @@ body::after {
             { n: 'B4', l: 1 / 12 },
             { n: 'A4', l: 1 / 12 },
             { n: 'G4', l: 1 / 4 },
-            { n: 'F#4', l: 1 / 4 },
+            { n: 'F#4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'E4', l: 1 / 2 },
             { n: 'B4', l: 1 / 4 },
@@ -1626,7 +1697,7 @@ body::after {
             { n: 'F#4', l: 1 / 4 },
 
             { n: 'E4', l: 1 / 2 },
-            { n: 'B4', l: 1 / 4 },
+            { n: 'B4', l: 1 / 4, i: PETAL_FALL_MARKER },
             /* 89 */
             { n: 'B4', l: 1 / 12 },
             { n: 'C5', l: 1 / 12 },
@@ -1645,7 +1716,7 @@ body::after {
             { n: 'F#4', l: 1 / 4 },
             /* Volta 84-90 */
             { n: 'E4', l: 1 / 2 },
-            { n: 'B4', l: 1 / 4 },
+            { n: 'B4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'A4', l: 1 / 12 },
             { n: 'B4', l: 1 / 12 },
@@ -1669,7 +1740,7 @@ body::after {
             { n: 'C5', l: 1 / 12 },
             { n: 'B4', l: 1 / 12 },
             { n: 'A4', l: 1 / 4 },
-            { n: 'G4', l: 1 / 4 },
+            { n: 'G4', l: 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 8 + 1 / 16 },
             { n: 'A4', l: 1 / 16 },
@@ -1684,7 +1755,7 @@ body::after {
 
             { n: 'B4', l: 1 / 4 + 1 / 8 },
             { n: 'A4', l: 1 / 4 },
-            { n: 'G4', l: 1 / 8 },
+            { n: 'G4', l: 1 / 8, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1698,7 +1769,7 @@ body::after {
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
             { n: 'B4', l: 1 / 8 },
-            { n: 'C5', l: 1 / 8 },
+            { n: 'C5', l: 1 / 8, i: PETAL_FALL_MARKER },
 
             { n: 'C5', l: 1 / 4 + 1 / 8 },
             { n: 'B4', l: 1 / 8 },
@@ -1721,7 +1792,7 @@ body::after {
 
             { n: 'B4', l: 1 / 4 + 1 / 8 },
             { n: 'A4', l: 1 / 4 },
-            { n: 'G4', l: 1 / 8 },
+            { n: 'G4', l: 1 / 8, i: PETAL_FALL_MARKER },
 
             { n: 'F#4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 + 1 / 8 },
@@ -1738,7 +1809,7 @@ body::after {
             { n: 'C5', l: 1 / 4 },
             { n: 'B4', l: 1 / 4 },
             { n: 'A4', l: 1 / 8 + 1 / 16 },
-            { n: 'A4', l: 1 / 16 },
+            { n: 'A4', l: 1 / 16, i: PETAL_FALL_MARKER },
 
             { n: 'G4', l: 1 / 4 },
             { n: 'F#4', l: 1 / 4 },
@@ -1752,7 +1823,7 @@ body::after {
             { n: 'E4', l: 1 / 4 + 1 / 8 },
 
             { n: 'A4', l: 1 / 4 },
-            { n: 'B4', l: 1 / 2 },
+            { n: 'B4', l: 1 / 2, i: PETAL_FALL_MARKER },
             /* 110 */
             { n: 'B5', l: 0, o: 1 / 8 + 1 / 16 },
             { n: 'B4', l: 1 / 8 + 1 / 16 },
@@ -1766,7 +1837,7 @@ body::after {
             { n: 'B4', l: 1 / 4 },
 
             { n: 'B5', l: 0, o: 1 / 2 + 1 / 4 },
-            { n: 'B4', l: 1 / 2 + 1 / 4 },
+            { n: 'B4', l: 1 / 2 + 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'B5', l: 0, o: 1 / 8 + 1 / 16 },
             { n: 'B4', l: 1 / 8 + 1 / 16 },
@@ -1780,7 +1851,7 @@ body::after {
             { n: 'B4', l: 1 / 4 },
 
             { n: 'B5', l: 0, o: 1 / 2 + 1 / 4 },
-            { n: 'B4', l: 1 / 2 + 1 / 4 },
+            { n: 'B4', l: 1 / 2 + 1 / 4, i: PETAL_FALL_MARKER },
             /* 114 */
             { n: 'B5', l: 0, o: 1 / 8 + 1 / 16 },
             { n: 'B4', l: 1 / 8 + 1 / 16 },
@@ -1797,14 +1868,13 @@ body::after {
             { n: 'B4', l: 1 / 2 + 1 / 4 },
 
             { n: 'F#5', l: 0, o: 1 / 2 + 1 / 4 },
-            { n: 'F#4', l: 1 / 2 + 1 / 4 },
+            { n: 'F#4', l: 1 / 2 + 1 / 4, i: PETAL_FALL_MARKER },
 
             { n: 'E5', l: 0, o: 1 },
             { n: 'E4', l: 1 },
           ],
           [
             { R: 1.8, G: 0.1, F: 1, T: 'sine' },
-            { l: 2 },
 
             { l: 3 / 4 },
 
@@ -2326,96 +2396,166 @@ body::after {
 
       function AudioModule() {
         this.audioCtx = null;
-        this.lotrNotes = lotrNotes;
-        this.likeNotes = likeNotes;
-        this.holdNotes = holdNotes;
+        this.lotrSong = new Song(lotrNotes);
+        this.likeNotes = new Song(likeNotes);
+        this.holdSong = new Song(holdNotes);
       }
 
-      function Track(notes, audioCtx, cb) {
-        this.audioCtx = audioCtx;
-        this.timePointer = this.audioCtx.currentTime;
+      function Song(params) {
+        this.ctxTime = 0;
+        this.songPlayedTime = 0;
+        this.tracks = params.tracks.map(notes => new Track(notes));
+        this.duration = Math.max(...this.tracks.map(track => track.duration));
+      }
+
+      Song.prototype.play = function(onPlay) {
+        const audioCtx = audioModule.getCtx();
+        this.ctxTime = audioCtx.currentTime;
+        this.tracks.forEach(track => track.play(audioCtx, this.ctxTime, this.songPlayedTime, onPlay));
+      };
+
+      Song.prototype.stop = function() {
+        const audioCtx = audioModule.getCtx();
+        const ctxStopTime = audioCtx.currentTime;
+        this.songPlayedTime += ctxStopTime - this.ctxTime;
+        this.tracks.forEach(track => track.stop(ctxStopTime));
+      };
+
+      function Track(notes) {
         this.mainOscillatorType = 'sine';
         this.mainGain = 0.5;
         this.mainRate = 1;
         this.mainFadeRatio = 0.5;
-        this.notes = notes;
-        this.playCb = cb;
+        this.duration = 0;
+        this.notesData = this.createNotesData(notes);
+        this.playDataSet = new Set();
       }
 
-      Track.prototype.play = function() {
-        this.notes.forEach(params => this.playNote(params))
+      Track.prototype.play = function(audioCtx, ctxTime, songPlayedTime, onPlay) {
+        this.notesData.forEach(noteData => {
+          if (noteData.trackTime >= songPlayedTime) {
+            const data = this.playNote(noteData, audioCtx, ctxTime - songPlayedTime, (action) => {
+              onPlay?.(action);
+              // trick: accessing data in callback AFTER initialization due to async execution
+              this.playDataSet.delete(data);
+            });
+            this.playDataSet.add(data);
+          }
+        });
       };
 
-      Track.prototype.playNote = function(params) {
-        const length = params.l || 0;
-        const frequency = noteFrequencyMap[params.n] || null;
+      Track.prototype.stop = function(ctxStopTime) {
+        this.playDataSet.forEach((playData) => {
+          if (playData.oscillator && playData.ctxTime > ctxStopTime) {
+            playData.gainNode?.gain.setValueAtTime(0.01, ctxStopTime + 1 / 128);
+            playData.oscillator?.stop(ctxStopTime + 1 / 128);
+            playData.oscillator.onended = () => {
+              playData.gainNode.disconnect();
+              playData.oscillator.disconnect();
+            }
+          }
+        });
+        this.playDataSet.clear();
+      };
 
-        if (params.T) { this.mainOscillatorType = params.T; }
-        if (typeof params.G === 'number') { this.mainGain = params.G; }
-        if (typeof params.R === 'number') { this.mainRate = params.R; }
-        if (typeof params.F === 'number') { this.mainFadeRatio = params.F; }
-        if (frequency !== null) {
-          const type = params.t || this.mainOscillatorType;
-          const gain = params.g || this.mainGain;
-          const rate = params.r || this.mainRate;
-          const fadeRatio = typeof params.f === 'number' ? params.f : this.mainFadeRatio;
-          const overplay = typeof params.o === 'number' ? params.o : 0;
-          const fade = length * fadeRatio || 0;
-          const detune = noteFrequencyMap[params.d] || null;
-          const duration = (length + overplay + fade) * rate;
-          const gainNode = this.audioCtx.createGain();
-          gainNode.gain.setValueAtTime(0, this.timePointer);
-          gainNode.gain.linearRampToValueAtTime(gain, this.timePointer + 1 / 128);
-          gainNode.connect(this.audioCtx.destination);
+      Track.prototype.playNote = function(noteData, audioCtx, baseTime, playHandler) {
+        const ctxTime = baseTime + noteData.trackTime;
+        const playData = { ctxTime };
 
-          const oscillator = this.audioCtx.createOscillator();
-          oscillator.type = type;
-          oscillator.frequency.setValueAtTime(frequency, 0);
+        if (typeof noteData.frequency === 'number') {
+          const gainNode = audioCtx.createGain();
+          playData.gainNode = gainNode;
+          gainNode.gain.setValueAtTime(0, ctxTime);
+          gainNode.gain.linearRampToValueAtTime(noteData.gain, ctxTime + 1 / 128);
+          gainNode.connect(audioCtx.destination);
+
+          const oscillator = audioCtx.createOscillator();
+          playData.oscillator = oscillator;
+          oscillator.type = noteData.type;
+          oscillator.frequency.setValueAtTime(noteData.frequency, 0);
           oscillator.connect(gainNode);
-          oscillator.start(this.timePointer);
+          oscillator.start(ctxTime);
 
-          if (detune > 0) {
-            oscillator.frequency.exponentialRampToValueAtTime(detune, this.timePointer + duration);
+          if (noteData.detune > 0) {
+            oscillator.frequency.exponentialRampToValueAtTime(noteData.detune, ctxTime + noteData.duration);
           }
 
-          gainNode.gain.setValueAtTime(gain, this.timePointer + duration / 2);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, this.timePointer + duration);
+          gainNode.gain.setValueAtTime(noteData.gain, ctxTime + noteData.duration / 2);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, ctxTime + noteData.duration);
 
-          oscillator.stop(this.timePointer + duration);
+          oscillator.stop(ctxTime + noteData.duration);
           oscillator.onended = () => {
-            if (typeof this.playCb === 'function') { this.playCb(params); }
+            playHandler?.(noteData.action);
             gainNode.disconnect();
             oscillator.disconnect();
           };
+        } else {
+          Q(() => playHandler?.(noteData.action));
         }
-        this.timePointer += length * this.mainRate;
+
+        return playData;
       };
 
-      AudioModule.prototype.play = function(song, cb) {
-        this.checkCtx();
-        const tracks = song.tracks.map(notes => new Track(notes, this.audioCtx, cb));
-        tracks.forEach(track => track.play());
-      };
+      Track.prototype.createNotesData = function(notes) {
+        let nextTime = 0;
 
-      AudioModule.prototype.checkCtx = function() {
+        const notesData = notes.reduce((data, params) => {
+          const noteData = {};
+          noteData.length = params.l || 0;
+          noteData.frequency = noteFrequencyMap[params.n] || undefined;
+
+          if (typeof params.G === 'number') { this.mainGain = params.G; }
+          if (typeof params.R === 'number') { this.mainRate = params.R; }
+          if (typeof params.F === 'number') { this.mainFadeRatio = params.F; }
+          if (params.T) { this.mainOscillatorType = params.T; }
+          if (params.i) { noteData.action = params.i; }
+
+          noteData.rate = params.r || this.mainRate;
+          noteData.trackTime = nextTime;
+
+          if (typeof noteData.frequency === 'number') {
+            noteData.type = params.t || this.mainOscillatorType;
+            noteData.gain = params.g || this.mainGain;
+            noteData.fadeRatio = typeof params.f === 'number' ? params.f : this.mainFadeRatio;
+            noteData.overplay = typeof params.o === 'number' ? params.o : 0;
+            noteData.fade = noteData.length * noteData.fadeRatio || 0;
+            noteData.detune = noteFrequencyMap[params.d] || undefined;
+            noteData.duration = (noteData.length + noteData.overplay + noteData.fade) * noteData.rate;
+          }
+
+          nextTime += noteData.length * noteData.rate;
+          data.push(noteData)
+          return data;
+        }, []);
+
+        this.duration = nextTime;
+        return notesData;
+      }
+
+      AudioModule.prototype.getCtx = function() {
         this.audioCtx = this.audioCtx || new window.AudioContext();
+        return this.audioCtx;
       };
 
-      AudioModule.prototype.handleAudioEvents = function(params) {
-        switch (params.i) {
+      AudioModule.prototype.handleSongEvents = function (action) {
+        switch (action) {
+          case BLACK_BUTTON_RENDER_MARKER:
+            buttonsModule.renderBlackButton();
+            break;
           case AUTO_RENDER_MARKER:
             buttonsModule.renderRepaintButton();
-            buttonsModule.renderBlackButton();
             flowersModule.setAutoRender(true);
             break;
           case PETAL_FALL_MARKER:
             const camomiles = flowersModule.flowers.filter(flower => flower.type === CAMOMILE_FLOWER_TYPE);
             const camomile = rndOf(camomiles);
-            if (camomile) { rndOf(camomile.petals).element.dispatchEvent(new Event('click', { bubbles: true })); }
+            if (camomile) {
+              rndOf(camomile.petals).element.dispatchEvent(new Event('click', {bubbles: true}));
+            }
             break;
           default:
-            if (!flowersModule.autoRender && params.n) {
-              flowersModule.renderFlowers(5);
+            if (!flowersModule.autoRender) {
+              flowersModule.renderFlowers(3);
             }
             break;
         }
@@ -2442,54 +2582,60 @@ body::after {
         this.buttonPlay.addEventListener('click', e => {
           e.stopPropagation();
           Q(() => toggleClassName(this.buttonPlay, 'show', false))
-                  .Q(() => this.buttonPlay.remove(), 300);
+            .Q(() => this.buttonPlay.remove(), 300);
 
           flowersModule.render();
-          audioModule.play(audioModule.lotrNotes, audioModule.handleAudioEvents);
+          audioModule.lotrSong.play(audioModule.handleSongEvents);
         });
       };
+
       Buttons.prototype.renderBlackButton = function() {
         const message = E('div', { className: 'button-black-message' }, this.buttonBlack);
         let isBlackMode = false;
-        let toggleCount = 0;
+
         E('div', { className: 'button-black-glass' }, message);
         mainWrapper.appendChild(this.buttonBlack);
         Q(() => toggleClassName(this.buttonBlack, 'show', true), 100)
-                .Q(() => S(this.buttonBlack, { opacity: 1 }), 100);
+          .Q(() => S(this.buttonBlack, { opacity: 1 }), 100);
 
         this.buttonBlack.addEventListener('click', e => {
           e.stopPropagation();
           isBlackMode = !isBlackMode;
-          toggleCount += 1;
-          if (toggleCount === 1) {
-            audioModule.play(audioModule.holdNotes);
-          }
+
+          const song = isBlackMode ? audioModule.lotrSong : audioModule.holdSong;
+          song.stop();
+
           Q(() => S(this.buttonBlack, { opacity: null }))
-                  .Q(() => toggleClassName(this.buttonBlack, 'show', false))
-                  .Q(() => {
-                    toggleClassName(message, 'back', isBlackMode);
-                    flowersModule.toggleBlack(isBlackMode);
-                  }, 1000)
-                  .Q(() => toggleClassName(this.buttonBlack, 'show', true), 10000);
+            .Q(() => toggleClassName(this.buttonBlack, 'show', false))
+            .Q(() => {
+              toggleClassName(message, 'back', isBlackMode);
+              flowersModule.toggleBlack(isBlackMode);
+            }, 1000)
+            .Q(() => {
+              const song = isBlackMode ? audioModule.holdSong : audioModule.lotrSong;
+              song.play(audioModule.handleSongEvents);
+            })
+            .Q(() => toggleClassName(this.buttonBlack, 'show', true), 10000);
         });
       };
+
       Buttons.prototype.renderRepaintButton = function() {
         let isFirstClick = true;
         mainWrapper.appendChild(this.buttonRepaint);
         Q(() => toggleClassName(this.buttonRepaint, 'show', true), 2000)
-                .Q(() => S(this.buttonRepaint, { opacity: 1 }), 100);
+          .Q(() => S(this.buttonRepaint, { opacity: 1 }), 100);
 
         this.buttonRepaint.addEventListener('click', e => {
           e.stopPropagation();
           if (isFirstClick) {
             isFirstClick = false;
             Q(() => toggleClassName(this.buttonLike, 'show', false))
-                    .Q(() => this.buttonLike.remove(), 1000);
+              .Q(() => this.buttonLike.remove(), 1000);
           }
           Q(() => S(this.buttonRepaint, { opacity: null }))
-                  .Q(() => toggleClassName(this.buttonRepaint, 'show', false))
-                  .Q(() => flowersModule.repaint())
-                  .Q(() => toggleClassName(this.buttonRepaint, 'show', true), 10000)
+            .Q(() => toggleClassName(this.buttonRepaint, 'show', false))
+            .Q(() => flowersModule.repaint())
+            .Q(() => toggleClassName(this.buttonRepaint, 'show', true), 10000)
         });
       };
 
@@ -2507,7 +2653,7 @@ body::after {
           e.stopPropagation();
           if (!pressed) {
             pressed = true;
-            audioModule.play(audioModule.likeNotes);
+            audioModule.likeNotes.play();
             toggleClassName(this.buttonLike, 'pressed', true);
             sendLike();
             Q(() => {
@@ -2524,9 +2670,9 @@ body::after {
     I(() => {
       initStyles();
       Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
-              .Q(() => S(mainWrapper, { backgroundColor: bgColor, boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
-              .Q(() => buttonsModule.renderPlayButton(), 0)
-              .Q(() => buttonsModule.renderLikeButton());
+        .Q(() => S(mainWrapper, { backgroundColor: bgColor, boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
+        .Q(() => buttonsModule.renderPlayButton(), 0)
+        .Q(() => buttonsModule.renderLikeButton(), 0);
     });
   }
 

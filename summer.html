@@ -54,17 +54,7 @@
 
     const bgColor = '#062';
     const CAMOMILE_FLOWER_TYPE = 'camomile';
-    const LOADED_URL = 'https://qrco.de/loaded';
     const LIKED_URL = 'https://qrco.de/liked';
-    const LOTR_PLAY_URL = 'https://qrco.de/lotr-play';
-    const LOTR_FULL_URL = 'https://qrco.de/lotr-full';
-    const HOLD_PLAY_URL = 'https://qrco.de/hold-play';
-    const HOLD_FULL_URL = 'https://qrco.de/hold-full';
-    const LOTR_PLAY_MARKER = Symbol('lotr_play');
-    const LOTR_FULL_MARKER = Symbol('lotr_full');
-    const HOLD_PLAY_MARKER = Symbol('hold_play');
-    const HOLD_FULL_MARKER = Symbol('hold_full');
-    const FINISH_MARKER = Symbol('song_reset');
     const DEFAULT_ACTION_MARKER = Symbol('default_action');
     const NO_ACTION_MARKER = Symbol('no_action');
     const BLACK_BUTTON_RENDER_MARKER = Symbol('black_button_render');
@@ -898,7 +888,7 @@ body::after {
             { n: 'F#4', l: 3 / 8 },
             { n: 'G4', l: 1 / 16 },
             { n: 'F#4', l: 1 / 16 },
-            { n: 'E4', l: 1 / 4, i: LOTR_PLAY_MARKER },
+            { n: 'E4', l: 1 / 4 },
 
             { n: 'D4', l: 1 / 8 },
             { n: 'E4', l: 1 / 8 },
@@ -1157,7 +1147,7 @@ body::after {
             { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
             { n: 'A#4', l: 1 / 16 },
             { n: 'C5', l: 1 / 16, i: PETAL_FALL_MARKER },
-            { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1, i: LOTR_FULL_MARKER },
+            { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
           ],
         ],
       };
@@ -1200,7 +1190,7 @@ body::after {
             { n: 'C5', l: 1 / 4 + 1 / 8 },
             { n: 'A4', l: 1 / 8 },
             { n: 'B4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16, i: HOLD_PLAY_MARKER },
+            { n: 'G4', l: 1 / 16 },
             /* 7 */
             { n: 'A4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1747,7 +1737,7 @@ body::after {
             { n: 'F#4', l: 1 / 2 + 1 / 4 },
 
             { n: 'E5', l: 0, o: 1 },
-            { n: 'E4', l: 1, i: HOLD_FULL_MARKER },
+            { n: 'E4', l: 1 },
           ],
           [
             { R: 1.8, G: 0.1, F: 1, T: 'sine' },
@@ -2280,23 +2270,22 @@ body::after {
       function Song(params) {
         this.ctxTime = 0;
         this.songPlayedTime = 0;
-        this.isFinished = true;
         this.tracks = params.tracks.map(notes => new Track(notes));
         this.duration = Math.max(...this.tracks.map(track => track.duration));
       }
 
       Song.prototype.play = function(playHandler) {
-        this.isFinished = false;
         const audioCtx = audioModule.getCtx();
         const onPlay = (action) => playHandler?.(this, action);
         this.ctxTime = audioCtx.currentTime;
+        if (this.songPlayedTime > this.duration) this.songPlayedTime = 0;
         this.tracks.forEach(track => track.play(audioCtx, this.ctxTime, this.songPlayedTime, onPlay));
       };
 
       Song.prototype.stop = function() {
           const audioCtx = audioModule.getCtx();
           const ctxStopTime = audioCtx.currentTime;
-          this.songPlayedTime = this.isFinished ? 0 : this.songPlayedTime + ctxStopTime - this.ctxTime;
+          this.songPlayedTime += ctxStopTime - this.ctxTime;
           this.tracks.forEach(track => track.stop(ctxStopTime));
       };
 
@@ -2372,7 +2361,7 @@ body::after {
       Track.prototype.createNotesData = function(notes) {
         let nextTime = 0;
 
-        const notesData = [...notes, { i: FINISH_MARKER, l: 1 }].reduce((data, params) => {
+        const notesData = [...notes].reduce((data, params) => {
           const noteData = {};
 
           if (typeof params.G === 'number') { this.mainGain = params.G; }
@@ -2425,22 +2414,6 @@ body::after {
             if (camomile) {
               rndOf(camomile.petals).element.dispatchEvent(new Event('click', {bubbles: true}));
             }
-            break;
-          case FINISH_MARKER:
-            songRef.isFinished = true;
-            songRef.stop();
-            break;
-          case LOTR_PLAY_MARKER:
-            L(LOTR_PLAY_URL);
-            break;
-          case LOTR_FULL_MARKER:
-            L(LOTR_FULL_URL);
-            break;
-          case HOLD_PLAY_MARKER:
-            L(HOLD_PLAY_URL);
-            break;
-          case HOLD_FULL_MARKER:
-            L(HOLD_FULL_URL);
             break;
           case NO_ACTION_MARKER:
             break;
@@ -2565,7 +2538,6 @@ body::after {
 
     I(() => {
       initStyles();
-      L(LOADED_URL);
       Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
         .Q(() => S(mainWrapper, { backgroundColor: bgColor, boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
         .Q(() => buttonsModule.renderPlayButton(), 0)

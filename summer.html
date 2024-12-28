@@ -54,8 +54,16 @@
 
     const bgColor = '#062';
     const CAMOMILE_FLOWER_TYPE = 'camomile';
-    const OPEN_URL = 'https://qrco.de/loaded';
-    const LIKE_URL = 'https://qrco.de/liked';
+    const LOADED_URL = 'https://qrco.de/loaded';
+    const LIKED_URL = 'https://qrco.de/liked';
+    const LOTR_PLAY_URL = 'https://qrco.de/lotr-play';
+    const LOTR_FULL_URL = 'https://qrco.de/lotr-full';
+    const HOLD_PLAY_URL = 'https://qrco.de/hold-play';
+    const HOLD_FULL_URL = 'https://qrco.de/hold-full';
+    const LOTR_PLAY_MARKER = Symbol('lotr_play');
+    const LOTR_FULL_MARKER = Symbol('lotr_full');
+    const HOLD_PLAY_MARKER = Symbol('hold_play');
+    const HOLD_FULL_MARKER = Symbol('hold_full');
     const FINISH_MARKER = Symbol('song_reset');
     const DEFAULT_ACTION_MARKER = Symbol('default_action');
     const NO_ACTION_MARKER = Symbol('no_action');
@@ -890,7 +898,7 @@ body::after {
             { n: 'F#4', l: 3 / 8 },
             { n: 'G4', l: 1 / 16 },
             { n: 'F#4', l: 1 / 16 },
-            { n: 'E4', l: 1 / 4 },
+            { n: 'E4', l: 1 / 4, i: LOTR_PLAY_MARKER },
 
             { n: 'D4', l: 1 / 8 },
             { n: 'E4', l: 1 / 8 },
@@ -940,7 +948,7 @@ body::after {
             { n: 'C#5', l: 1 / 8 },
             { n: 'D5', l: 1 / 8 },
             { l: 1 / 8 },
-            { n: 'B4', l: 1 / 8, i: PETAL_FALL_MARKER },
+            { n: 'B4', l: 1 / 8 },
             { n: 'F#4', l: 1 / 4 },
             { l: 1 / 8 },
             { n: 'A4', l: 1 / 8, i: PETAL_FALL_MARKER },
@@ -1011,8 +1019,8 @@ body::after {
             { n: 'A#5', l: 1 / 8 },
             { n: 'A#5', l: 1 / 4 },
             { n: 'A#5', l: 1 / 16 },
-            { n: 'A#5', l: 1 / 16 },
-            { n: 'A#5', l: 3 / 4, i: PETAL_FALL_MARKER },
+            { n: 'A#5', l: 1 / 16, i: PETAL_FALL_MARKER`` },
+            { n: 'A#5', l: 3 / 4 },
 
             { l: 1 / 4 },
             { F: 0.5, T: 'triangle' },
@@ -1034,8 +1042,8 @@ body::after {
             { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
             { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
             { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
-            { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
-            { n: 'E4', o: 1 / 4 }, { n: 'E5', l: 1 / 4, i: PETAL_FALL_MARKER },
+            { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4, i: PETAL_FALL_MARKER },
+            { n: 'E4', o: 1 / 4 }, { n: 'E5', l: 1 / 4 },
 
             { F: 1, T: 'sine', G: 0.5 },
             { n: 'E5', l: 1 / 16 },
@@ -1056,8 +1064,8 @@ body::after {
             { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
             { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
             { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
-            { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
-            { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8, i: PETAL_FALL_MARKER },
+            { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8, i: PETAL_FALL_MARKER },
+            { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
             { l: 1 / 8 },
             { n: 'A4', l: 1 / 8 },
             { n: 'F#4', l: 3 / 8 },
@@ -1072,15 +1080,15 @@ body::after {
             { l: 7 / 8 },
 
             { F: 0.5, G: 0.3 },
-            { n: 'D3', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8, i: PETAL_FALL_MARKER },
+            { n: 'D3', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
             { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
             { n: 'F#3', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
             { n: 'A3', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
             { n: 'F#3', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
             { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
             { n: 'D3', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
-            { n: 'E3', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
-            { n: 'D3', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
+            { n: 'E3', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'D3', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
 
             { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
             { n: 'A4', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
@@ -1090,8 +1098,8 @@ body::after {
             { n: 'A4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
             { n: 'F#4', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
             { n: 'G4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
-            { n: 'F#4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
-            { n: 'E4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 4, i: PETAL_FALL_MARKER },
+            { n: 'F#4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'E4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 4 },
 
             { n: 'D4', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
             { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
@@ -1100,8 +1108,8 @@ body::after {
             { n: 'F#4', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
             { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
             { n: 'D4', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
-            { n: 'E4', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
-            { n: 'D4', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
+            { n: 'E4', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'D4', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
 
             { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
             { n: 'A3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
@@ -1119,8 +1127,8 @@ body::after {
             { n: 'D4', l: 1 / 16 },
             { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
             { n: 'C4', l: 1 / 16 },
-            { n: 'C4', l: 1 / 16 },
-            { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4, i: PETAL_FALL_MARKER },
+            { n: 'C4', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
             { l: 1 / 8 },
             { n: 'G4', l: 1 / 16 },
             { n: 'A4', l: 1 / 16 },
@@ -1148,8 +1156,8 @@ body::after {
             { n: 'A#4', l: 1 / 16 },
             { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
             { n: 'A#4', l: 1 / 16 },
-            { n: 'C5', l: 1 / 16 },
-            { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1, i: PETAL_FALL_MARKER }, { n: 'D5', l: 1 },
+            { n: 'C5', l: 1 / 16, i: PETAL_FALL_MARKER },
+            { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1, i: LOTR_FULL_MARKER },
           ],
         ],
       };
@@ -1192,7 +1200,7 @@ body::after {
             { n: 'C5', l: 1 / 4 + 1 / 8 },
             { n: 'A4', l: 1 / 8 },
             { n: 'B4', l: 1 / 8 + 1 / 16 },
-            { n: 'G4', l: 1 / 16 },
+            { n: 'G4', l: 1 / 16, i: HOLD_PLAY_MARKER },
             /* 7 */
             { n: 'A4', l: 1 / 4 },
             { n: 'E4', l: 1 / 4 },
@@ -1739,7 +1747,7 @@ body::after {
             { n: 'F#4', l: 1 / 2 + 1 / 4 },
 
             { n: 'E5', l: 0, o: 1 },
-            { n: 'E4', l: 1 },
+            { n: 'E4', l: 1, i: HOLD_FULL_MARKER },
           ],
           [
             { R: 1.8, G: 0.1, F: 1, T: 'sine' },
@@ -2422,6 +2430,18 @@ body::after {
             songRef.isFinished = true;
             songRef.stop();
             break;
+          case LOTR_PLAY_MARKER:
+            L(LOTR_PLAY_URL);
+            break;
+          case LOTR_FULL_MARKER:
+            L(LOTR_FULL_URL);
+            break;
+          case HOLD_PLAY_MARKER:
+            L(HOLD_PLAY_URL);
+            break;
+          case HOLD_FULL_MARKER:
+            L(HOLD_FULL_URL);
+            break;
           case NO_ACTION_MARKER:
             break;
           case DEFAULT_ACTION_MARKER:
@@ -2531,7 +2551,7 @@ body::after {
             pressed = true;
             audioModule.likeNotes.play();
             toggleClassName(this.buttonLike, 'pressed', true);
-            L(LIKE_URL);
+            L(LIKED_URL);
             Q(() => {
               toggleClassName(this.buttonLike, 'pressed', false);
               pressed = false;
@@ -2545,7 +2565,7 @@ body::after {
 
     I(() => {
       initStyles();
-      L(OPEN_URL);
+      L(LOADED_URL);
       Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
         .Q(() => S(mainWrapper, { backgroundColor: bgColor, boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
         .Q(() => buttonsModule.renderPlayButton(), 0)

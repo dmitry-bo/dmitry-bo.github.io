@@ -18,23 +18,28 @@
       return c2s(s2c(s).map((c, i) => (c - b[bl - (i % bl + 1)] - d) ^ b[i % bl])); // XOR magic
     }
 
-    const password = prompt('Enter the password, please');
-    const success = [...document.body.childNodes].some(node => {
-      if (password !== null && node.nodeType === 8 && node.nodeValue) {
-        const data = node.nodeValue;
-        const loader = decrypt(data.slice(0, -1), password, ch2c(data.slice(-1)));
+    function validate() {
+      const password = prompt('Enter the password, please:');
+      if (password === null) return;
 
-        try {
-          const loaderFn = new Function(loader)();
-          loaderFn();
-          return true;
-        } catch(e) {
-          return false;
+      const success = [...document.body.childNodes].some(({ nodeValue, nodeType }) => {
+        if (nodeType === 8 && nodeValue) {
+          const loaderCode = decrypt(nodeValue.slice(0, -1), password, ch2c(nodeValue.slice(-1)));
+
+          try {
+            const launcher = new Function(loaderCode)();
+            launcher();
+            return true;
+          } catch(e) {
+            return false;
+          }
         }
-      }
-    });
+      });
 
-    if (password !== null && !success) window.location.reload();
+      if (!success) validate();
+    }
+
+    setTimeout(validate, 100);
   </script>
 </body>
 </html>

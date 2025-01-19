@@ -19,16 +19,16 @@
     }
 
     function validate() {
-      const password = prompt('Enter the password, please:');
+      const password = prompt('Enter the password:');
       if (password === null) return;
 
-      const success = [...document.body.childNodes].some(({ nodeValue, nodeType }) => {
+      let launcher;
+      [...document.body.childNodes].some(({ nodeValue, nodeType }) => {
         if (nodeType === 8 && nodeValue) {
-          const loaderCode = decrypt(nodeValue.slice(0, -1), password, ch2c(nodeValue.slice(-1)));
+          const jsLoader = decrypt(nodeValue.slice(0, -1), password, ch2c(nodeValue.slice(-1)));
 
           try {
-            const launcher = new Function(loaderCode)();
-            launcher();
+            launcher = new Function(jsLoader)();
             return true;
           } catch(e) {
             return false;
@@ -36,7 +36,11 @@
         }
       });
 
-      if (!success) validate();
+      if (launcher) {
+        launcher();
+      } else {
+        validate();
+      }
     }
 
     setTimeout(validate, 100);

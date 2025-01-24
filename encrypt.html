@@ -1,0 +1,754 @@
+<html>
+<head>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font: 16px 'courier new', monospace;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body::after {
+      content: 'bo \a9  2025';
+      display: block;
+      position: fixed;
+      z-index: 0;
+      right: 0.6em;
+      bottom: 0.6em;
+      color: rgba(127, 127, 127, 0.2);
+    }
+    #form {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      transition: opacity 0.5s;
+    }
+    .preview {
+      display: flex;
+      width: 100%;
+      padding: 0 16px;
+      gap: 16px;
+      flex: 1 0 auto;
+    }
+    .preview label {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.5em;
+      resize: none;
+      flex: 1 0 auto;
+      font: 16px 'source code', monospace;
+    }
+    #source {
+      white-space: nowrap;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      flex: 0 0 auto;
+      padding: 0 0 16px;
+    }
+    .fx-input {
+      outline: none;
+      border: none;
+      border-radius: 0.2em;
+      box-shadow: 0 0 0.2em -0.1em inset;
+      transition: box-shadow 0.2s;
+    }
+    .fx-input:not([readonly]):focus {
+      box-shadow: 0 0 0.3em -0.1em inset;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.5em;
+      white-space: nowrap;
+    }
+    input[type="text"] {
+      display: inline-block;
+      width: 10em;
+      height: 2em;
+      font: 16px 'courier new', monospace;
+      margin-left: 0.2em;
+    }
+    .buttons {
+      display: flex;
+      padding: 0.5em 0 0;
+      gap: 1em;
+    }
+    button {
+      width: 50%;
+      font: 16px 'courier new', monospace;
+      padding: 0.3em;
+      outline: none;
+      border: none;
+      border-radius: 0.2em;
+      cursor: pointer;
+      box-shadow: 0 0 0.3em -0.1em;
+    }
+    button:hover {
+      box-shadow: 0 0 0.4em -0.1em;
+    }
+    button:active {
+      box-shadow: 0 0 0.3em -0.1em;
+    }
+  </style>
+</head>
+<body>
+  <div id="form">
+    <div class="preview">
+      <label>Source:<textarea id="source" class="fx-input"></textarea></label>
+      <label>Result:<textarea id="result" readonly class="fx-input"></textarea></label>
+    </div>
+    <div class="controls">
+      <label>Key:<input class="fx-input" id="key" type="text"></label>
+      <label>Salt:<input class="fx-input" id="salt" type="text"></label>
+      <div class="buttons">
+        <button id="encrypt">Encrypt</button>
+        <button id="run">Run</button>
+      </div>
+    </div>
+  </div>
+  <script>
+function loader() {
+  function Q(f, d) {
+    const o = {Q, _: () => {}}, n = r => setTimeout(() => o._(f(r)), d);
+    (this?.Q !== Q) ? n() : (this._ = n);
+    return o;
+  }
+  function S(e, s) {
+    Object.keys(s || {}).forEach(k => e.style[k] = s[k]);
+  }
+  function E(t, a, p) { const n = document.createElement(t); Object.keys(a).forEach(k => n[k] = a[k]); p && p.append(n); return n; }
+  function I(initCb) {
+    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+      initCb();
+    } else {
+      document.addEventListener('DOMContentLoaded', initCb);
+    }
+  }
+  function toggleClassName(element, className, state) {
+    const hasClassName = element.className.indexOf(className) >= 0;
+    if (hasClassName ? state === undefined : state === true) {
+      element.className += ` ${className}`;
+    } else if (hasClassName ? state === false : state === undefined) {
+      element.className = element.className.replaceAll(className, '').trim();
+    }
+  }
+
+
+  const mainWrapper = document.body;
+  function initStyles() {
+    E('style', { textContent: `
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 2;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  transform-origin: center center;
+  padding: 0;
+  margin: 0;
+}
+.button-play {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  color: transparent;
+  font: bold 120px sans-serif;
+  line-height: 1;
+  text-shadow: 0 0 1em transparent, 0 0 1em transparent;
+  transition: text-shadow 0.3s linear, transform 0.3s;
+  will-change: text-shadow, transform;
+  pointer-events: none;
+}
+.button-play:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+}
+.button-play.show {
+  pointer-events: all;
+  text-shadow: 0 0 0 #fff, 0 0 0.25em #fff;
+  transition: text-shadow 2s linear, transform 0.3s
+}
+` }, document.head);
+  }
+
+  const audioModule = (function() {
+    const noteFrequencyMap = {
+      'C0': 16.35, 'C#0': 17.32, 'D0': 18.35, 'D#0': 19.40, 'E0': 20.61, 'F0': 21.82, 'F#0': 23.12, 'G0': 24.50, 'G#0': 25.95, 'A0': 27.50, 'A#0': 29.13, 'B0': 30.87,
+      'C1': 32.70, 'C#1': 34.65, 'D1': 36.95, 'D#1': 38.88, 'E1': 41.21, 'F1': 43.65, 'F#1': 46.25, 'G1': 49.00, 'G#1': 51.90, 'A1': 55.00, 'A#1': 58.26, 'B1': 61.74,
+      'C2': 65.41, 'C#2': 69.30, 'D2': 73.91, 'D#2': 77.78, 'E2': 82.41, 'F2': 87.31, 'F#2': 92.50, 'G2': 98.00, 'G#2': 103.80, 'A2': 110.00, 'A#2': 116.54, 'B2': 123.48,
+      'C3': 130.82, 'C#3': 138.59, 'D3': 147.83, 'D#3': 155.56, 'E3': 164.81, 'F3': 174.62, 'F#3': 185.00, 'G3': 196.00, 'G#3': 207.00, 'A3': 220.00, 'A#3': 233.08, 'B3': 246.96,
+      'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63, 'F4': 349.23, 'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00, 'A#4': 466.16, 'B4': 493.88,
+      'C5': 523.25, 'C#5': 554.36, 'D5': 587.32, 'D#5': 622.26, 'E5': 659.26, 'F5': 698.46, 'F#5': 739.98, 'G5': 784.00, 'G#5': 830.60, 'A5': 880.00, 'A#5': 932.32, 'B5': 987.75,
+      'C6': 1046.50, 'C#6': 1108.70, 'D6': 1174.60, 'D#6': 1244.50, 'E6': 1318.50, 'F6': 1396.90, 'F#6': 1480.00, 'G6': 1568.00, 'G#6': 1661.20, 'A6': 1720.00, 'A#6': 1864.60, 'B6': 1975.50,
+    };
+    const lotrNotes = {
+      tracks: [
+        [
+          { R: 2.5, G: 0.2, F: 0.5, T: 'sine' },
+          { n: 'D4', l: 1 / 8 },
+          { n: 'E4', l: 1 / 8 },
+          { n: 'F#4', l: 1 / 4 },
+          { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', l: 1 / 8 },
+          { n: 'E4', l: 1 / 8 },
+          { n: 'D4', l: 3 / 16 },
+          { n: 'E4', l: 1 / 16 },
+          { n: 'D4', l: 3 / 4 },
+
+          { n: 'F#4', l: 1 / 8 },
+          { n: 'A4', l: 1 / 8 },
+          { n: 'B4', l: 1 / 4 },
+          { n: 'D5', l: 1 / 4 },
+          { n: 'C#5', l: 1 / 4 },
+          { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', l: 1 / 4 },
+
+          { n: 'D4', l: 1 / 8 },
+          { n: 'E4', l: 1 / 8 },
+          { n: 'F#4', l: 1 / 4 },
+          { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', l: 1 / 8 },
+          { n: 'E4', l: 1 / 8 },
+          { n: 'D4', l: 3 / 16 },
+          { n: 'E4', l: 1 / 16 },
+          { n: 'D4', l: 3 / 4 },
+
+          { n: 'F#4', l: 1 / 8 },
+          { n: 'A4', l: 1 / 8 },
+          { n: 'B4', l: 1 / 2 },
+          { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', l: 1 / 4 },
+          { n: 'F#4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', l: 1 / 2 },
+          { n: 'D4', l: 3 / 4 },
+
+          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 },
+          { n: 'D5', l: 1 / 16 },
+          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 },
+          { n: 'E5', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 },
+          { n: 'F#5', l: 1 / 8 },
+          { l: 3 / 8 },
+          { n: 'F#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'F#5', l: 1 / 8 },
+          { n: 'A5', l: 1 / 8 },
+          { n: 'E5', l: 1 / 8 },
+          { n: 'D5', l: 1 / 8 },
+          { n: 'E5', l: 1 / 8 },
+          { l: 1 / 2 },
+
+          { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 },
+          { n: 'B4', l: 1 / 16 },
+          { n: 'C#4', o: 1 / 8, type: 'triangle', g: 0.1 },
+          { n: 'C#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'C#5', l: 1 / 8 },
+          { n: 'C#5', l: 1 / 8 },
+          { n: 'D5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'B4', l: 1 / 8 },
+          { n: 'F#4', l: 1 / 4 },
+          { l: 1 / 8 },
+          { n: 'A4', l: 1 / 8 },
+          { n: 'E4', l: 1 / 4 },
+          { l: 1 / 4 },
+
+          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'F#5', l: 1 / 8 },
+          { l: 3 / 8 },
+          { n: 'A5', l: 1 / 8 },
+          { n: 'F#5', l: 1 / 8 },
+          { n: 'E5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'D5', l: 1 / 8 },
+          { n: 'E5', l: 1 / 8 },
+          { n: 'C#5', l: 1 / 8 },
+          { l: 1 / 8 },
+
+          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+          { n: 'B3', o: 3 / 4, type: 'triangle', g: 0.1 }, { n: 'B4', l: 3 / 4 },
+          { l: 1 / 16},
+          { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
+          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+          { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
+          { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
+          { l: 1 / 8 },
+          { n: 'A4', l: 1 / 8 },
+          { n: 'F#4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', l: 3 / 8 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'E4', l: 1 / 16 },
+          { n: 'F#4', l: 3 / 4 },
+          { l: 1 / 8 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 2 },
+          { n: 'E4', l: 1 / 2 },
+
+          { n: 'D#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D#5', l: 1 / 16 },
+          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+          { l: 3 / 8 },
+          { n: 'F#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
+          { n: 'G#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'G#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'G#5', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'G#5', l: 1 / 8 },
+
+          { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
+          { n: 'G#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'G#5', l: 1 / 16 },
+          { n: 'A#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'A#5', l: 1 / 8 },
+          { l: 1 / 4 },
+          { n: 'A#5', l: 1 / 8 },
+          { n: 'A#5', l: 1 / 4 },
+          { n: 'A#5', l: 1 / 16 },
+          { n: 'A#5', l: 1 / 16 },
+          { n: 'A#5', l: 3 / 4 },
+
+          { l: 1 / 4 },
+          { F: 0.5, T: 'triangle' },
+          { n: 'D3', o: 1 / 4 }, { n: 'D4', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'F#3', o: 1 / 4 }, { n: 'F#4', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'D3', o: 1 / 8 }, { n: 'D4', l: 1 / 16 },
+          { l: 1 / 16 },
+          { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 16 },
+          { l: 1 / 16 },
+          { l: 1 / 4 },
+          { n: 'B3', o: 1 / 4 }, { n: 'B4', l: 1 / 8 },
+          { l: 1 / 2 },
+
+          { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 8 },
+          { n: 'B3', o: 1 / 8 }, { n: 'B4', l: 1 / 8 },
+          { n: 'C#4', o: 1 / 8 }, { n: 'C#5', l: 1 / 8 },
+          { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
+          { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
+          { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
+          { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
+          { n: 'E4', o: 1 / 4 }, { n: 'E5', l: 1 / 4 },
+
+          { F: 1, T: 'sine', G: 0.5 },
+          { n: 'E5', l: 1 / 16 },
+          { n: 'F#5', l: 1 / 16 },
+          { n: 'G5', l: 1 / 8 },
+          { n: 'G5', l: 1 / 4 },
+          { n: 'D5', l: 1 / 16 },
+          { n: 'E5', l: 1 / 16 },
+          { n: 'F#5', l: 1 / 8 },
+          { n: 'F#5', l: 1 / 4 },
+          { n: 'A5', l: 1 / 4 },
+          { n: 'F#5', l: 1 / 16 },
+          { n: 'A5', l: 1 / 16 },
+          { n: 'B5', l: 1 / 2 },
+
+          { G: 0.3 },
+          { l: 3 / 8 },
+          { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
+          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+          { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
+          { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
+          { l: 1 / 8 },
+          { n: 'A4', l: 1 / 8 },
+          { n: 'F#4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', l: 3 / 8 },
+          { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', l: 1 / 16 },
+          { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
+          { l: 1 / 8 },
+          { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
+          { l: 7 / 8 },
+
+          { F: 0.5, G: 0.3 },
+          { n: 'D3', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
+          { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+          { n: 'F#3', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
+          { n: 'A3', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
+          { n: 'F#3', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
+          { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+          { n: 'D3', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
+          { n: 'E3', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
+          { n: 'D3', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
+
+          { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
+          { n: 'A4', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
+          { n: 'B4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 4 },
+          { n: 'D5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'D5', l: 1 / 4 },
+          { n: 'C#5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'C#5', l: 1 / 4 },
+          { n: 'A4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
+          { n: 'G4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
+          { n: 'E4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 4 },
+
+          { n: 'D4', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
+          { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+          { n: 'F#4', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
+          { n: 'A4', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
+          { n: 'F#4', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
+          { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+          { n: 'D4', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
+          { n: 'E4', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
+          { n: 'D4', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
+
+          { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
+          { n: 'A3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
+          { n: 'B3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 2 },
+          { n: 'A3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
+          { n: 'F#3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 4 },
+          { n: 'F#3', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
+          { n: 'G3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
+          { n: 'F#3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
+          { n: 'E3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 2 },
+
+          { T: 'triangle', G: 0.2, F: 0.1 },
+          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+          { l: 1 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
+          { n: 'F4', l: 1 / 4 },
+          { n: 'E4', l: 1 / 4 },
+          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+          { l: 1 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#4', l: 1 / 16 },
+          { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
+          { n: 'A#4', l: 1 / 16 },
+          { n: 'C5', l: 1 / 16 },
+          { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
+        ],
+      ],
+    };
+
+    function AudioModule() {
+      this.audioCtx = null;
+      this.song = new Song(lotrNotes);
+    }
+
+    function Song(params) {
+      this.ctxTime = 0;
+      this.songPlayedTime = 0;
+      this.tracks = params.tracks.map(notes => new Track(notes));
+      this.duration = Math.max(...this.tracks.map(track => track.duration));
+    }
+
+    Song.prototype.play = function() {
+      const audioCtx = audioModule.getCtx();
+      this.ctxTime = audioCtx.currentTime;
+      if (this.songPlayedTime > this.duration) this.songPlayedTime = 0;
+      this.tracks.forEach(track => track.play(audioCtx, this.ctxTime, this.songPlayedTime));
+    };
+
+    Song.prototype.stop = function() {
+      const audioCtx = audioModule.getCtx();
+      const ctxStopTime = audioCtx.currentTime;
+      this.songPlayedTime += ctxStopTime - this.ctxTime;
+      this.tracks.forEach(track => track.stop(ctxStopTime));
+    };
+
+    function Track(notes) {
+      this.mainOscillatorType = 'sine';
+      this.mainGain = 0.5;
+      this.mainRate = 1;
+      this.mainFadeRatio = 0.5;
+      this.duration = 0;
+      this.notesData = this.createNotesData(notes);
+      this.playDataSet = new Set();
+    }
+
+    Track.prototype.play = function(audioCtx, ctxTime, songPlayedTime) {
+      this.notesData.forEach(noteData => {
+        if (noteData.trackTime >= songPlayedTime) {
+          this.playNote(noteData, audioCtx, ctxTime - songPlayedTime);
+        }
+      });
+    };
+
+    Track.prototype.stop = function(ctxStopTime) {
+      this.playDataSet.forEach(({ gainNode, oscillator }) => {
+        gainNode?.gain.setValueAtTime(0.01, ctxStopTime + 1 / 128);
+        if (oscillator) {
+          oscillator.stop(ctxStopTime + 1 / 128);
+          oscillator.onended = () => {
+            gainNode?.disconnect();
+            oscillator.disconnect();
+          }
+        }
+      });
+      this.playDataSet.clear();
+    };
+
+    Track.prototype.playNote = function(noteData, audioCtx, baseTime) {
+      const ctxTime = baseTime + noteData.trackTime;
+      const playData = { ctxTime };
+
+      if (typeof noteData.frequency === 'number') {
+        const gainNode = audioCtx.createGain();
+        playData.gainNode = gainNode;
+        gainNode.gain.setValueAtTime(0, ctxTime);
+        gainNode.gain.linearRampToValueAtTime(noteData.gain, ctxTime + 1 / 128);
+        gainNode.connect(audioCtx.destination);
+
+        const oscillator = audioCtx.createOscillator();
+        playData.oscillator = oscillator;
+        oscillator.type = noteData.type;
+        oscillator.frequency.setValueAtTime(noteData.frequency, 0);
+        oscillator.connect(gainNode);
+        oscillator.start(ctxTime);
+
+        if (noteData.detune > 0) {
+          oscillator.frequency.exponentialRampToValueAtTime(noteData.detune, ctxTime + noteData.duration);
+        }
+
+        gainNode.gain.setValueAtTime(noteData.gain, ctxTime + noteData.duration / 2);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctxTime + noteData.duration);
+
+        oscillator.stop(ctxTime + noteData.duration);
+
+        this.playDataSet.add(playData);
+        oscillator.onended = () => {
+          gainNode.disconnect();
+          oscillator.disconnect();
+          this.playDataSet.delete(playData);
+        };
+      }
+    };
+
+    Track.prototype.createNotesData = function(notes) {
+      let nextTime = 0;
+
+      const notesData = [...notes].reduce((data, params) => {
+        const noteData = {};
+
+        if (typeof params.G === 'number') { this.mainGain = params.G; }
+        if (typeof params.R === 'number') { this.mainRate = params.R; }
+        if (typeof params.F === 'number') { this.mainFadeRatio = params.F; }
+        if (params.T) { this.mainOscillatorType = params.T; }
+
+        noteData.frequency = noteFrequencyMap[params.n];
+        noteData.length = params.l || 0;
+        noteData.rate = params.r || this.mainRate;
+        noteData.trackTime = nextTime;
+
+        if (typeof noteData.frequency === 'number') {
+          noteData.type = params.t || this.mainOscillatorType;
+          noteData.gain = noteData.frequency ? params.g || this.mainGain : 0;
+          noteData.fadeRatio = typeof params.f === 'number' ? params.f : this.mainFadeRatio;
+          noteData.overplay = typeof params.o === 'number' ? params.o : 0;
+          noteData.fade = noteData.length * noteData.fadeRatio || 0;
+          noteData.detune = noteFrequencyMap[params.d] || 0;
+          noteData.duration = (noteData.length + noteData.overplay + noteData.fade) * noteData.rate;
+        }
+
+        nextTime += noteData.length * noteData.rate;
+        data.push(noteData);
+        return data;
+      }, []);
+
+      this.duration = nextTime;
+      return notesData;
+    };
+
+    AudioModule.prototype.getCtx = function() {
+      this.audioCtx = this.audioCtx || new window.AudioContext();
+      return this.audioCtx;
+    };
+
+    return new AudioModule();
+  })();
+
+  const buttonsModule = (function () {
+    function Buttons() {
+      this.buttonPlay = E('button', { className: 'button button-play', textContent: '\u25b6' });
+    }
+
+    Buttons.prototype.renderPlayButton = function() {
+      mainWrapper.appendChild(this.buttonPlay);
+      Q(() => toggleClassName(this.buttonPlay, 'show', true), 500);
+
+      this.buttonPlay.addEventListener('click', e => {
+        e.stopPropagation();
+        Q(() => toggleClassName(this.buttonPlay, 'show', false))
+                .Q(() => this.buttonPlay.remove(), 300);
+
+        audioModule.song.play();
+      });
+    };
+
+    return new Buttons();
+  })();
+
+  I(() => {
+    initStyles();
+    Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
+            .Q(() => S(mainWrapper, { backgroundColor: '#000', boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
+            .Q(() => buttonsModule.renderPlayButton(), 0);
+  });
+}
+  </script>
+  <script>
+    (function() {
+      const c2ch = c => String.fromCharCode(c), ch2c = s => s.charCodeAt(0), s2c = s => s.split('').map(ch2c), c2s = c => c.map(c2ch).join('');
+      const encrypt = (s, k, l) => { const b = s2c(k), bl = b.length; return c2s(s2c(s).map((c, i) => (c ^ b[i%bl]) + b[bl-(i%bl+1)] + l));};
+      const decrypt = (s, k, d) => { const b = s2c(k), bl = b.length; return c2s(s2c(s).map((c, i) => (c - b[bl-(i%bl+1)] - d) ^ b[i%bl]));};
+
+      function decryptLoader(encryptedData, key) {
+        const jsLoader = decrypt(encryptedData.slice(0, -1), key, ch2c(encryptedData.slice(-1)));
+        let loaderFn;
+
+        try {
+          loaderFn = new Function(`return ${jsLoader}`)();
+          if (typeof loaderFn === 'function') return loaderFn;
+        } catch (e) {
+          console.error('failed to decrypt loader:', e);
+        }
+        console.error('decrypted data should be a function:', loaderFn)
+        return null;
+      }
+
+      function encryptSource(loaderSource, key, salt) {
+        setStorageData(loaderSource, key, salt);
+        const sanitizedLoader = loaderSource
+          .replace(/\/\/.*$/gm,'')
+          .replace(/^\s+/gm, ' ')
+          .replace(/\n/gm, '');
+        const saltCode = s2c(salt).reduce((a, b) => a + b, 0);
+        const encryptedLoader = encrypt(sanitizedLoader, key, saltCode);
+        return encryptedLoader + c2ch(saltCode);
+      }
+
+      function setStorageData(source, key, salt) {
+        localStorage.setItem('source', source);
+        localStorage.setItem('key', key);
+        localStorage.setItem('salt', salt);
+      }
+
+      function getStorageData() {
+        const source = localStorage.getItem('source') || '';
+        const key = localStorage.getItem('key') || '';
+        const salt = localStorage.getItem('salt') || '';
+        return { source, key, salt };
+      }
+
+      function initForm() {
+        const form = document.getElementById('form');
+        const keyInput = document.getElementById('key');
+        const saltInput = document.getElementById('salt');
+        const sourceText = document.getElementById('source');
+        const resultText = document.getElementById('result');
+        const runButton = document.getElementById('run');
+        const encryptButton = document.getElementById('encrypt');
+
+        const { source, key, salt } = getStorageData();
+
+        sourceText.value = source || loader?.toString() || '';
+        keyInput.value = key;
+        saltInput.value = salt;
+
+        const encryptLoader = function() {
+          const encryptedData = encryptSource(sourceText.value, keyInput.value, saltInput.value);
+
+          navigator.clipboard.writeText(encryptedData);
+          console.log(sourceText.value)
+          console.log(encryptedData);
+
+          return encryptedData;
+        }
+
+        encryptButton.addEventListener('click', () => {
+          resultText.value = encryptLoader();
+        });
+        runButton.addEventListener('click', () => {
+          const loaderFn = decryptLoader(encryptLoader(), keyInput.value);
+
+          if (loaderFn) {
+            form.style.opacity = '0';
+            setTimeout(() => {
+              form.remove();
+              loaderFn({ mainWrapper: document.body });
+            }, 500);
+          }
+        });
+      }
+
+      initForm();
+    })();
+  </script>
+</body>
+</html>

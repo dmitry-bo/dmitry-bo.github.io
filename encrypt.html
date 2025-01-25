@@ -5,6 +5,8 @@
       height: 100%;
       margin: 0;
       padding: 0;
+      background-color: #303030;
+      color: #eee;
       font: 20px 'courier new', monospace;
     }
     * {
@@ -27,20 +29,20 @@
       flex-direction: column;
       transition: opacity 0.5s;
     }
-    .preview {
+    #form .preview {
       display: flex;
       width: 100%;
       padding: 0 16px;
       gap: 16px;
       flex: 1 0 auto;
     }
-    .preview label {
+    #form .preview label {
       width: 50%;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-    textarea {
+    #form textarea {
       width: 100%;
       padding: 0.5em;
       resize: none;
@@ -53,8 +55,8 @@
     #result {
       cursor: pointer;
     }
-    #result:active {
-      background-color: #efe;
+    #form #result:active {
+      background-color: #242;
     }
     #result::placeholder {
       text-align: center;
@@ -62,31 +64,33 @@
       line-height: 0;
       top: 50%;
     }
-    .controls {
+    #form .controls {
       display: flex;
       flex-direction: column;
       user-select: none;
       flex: 0 0 auto;
       padding: 0 0 16px;
     }
-    .fx-input {
+    #form .fx-input {
       outline: none;
       border: none;
       border-radius: 0.2em;
+      background-color: #444;
+      color: #ddd;
       box-shadow: 0 0 0.2em -0.1em inset;
       transition: box-shadow 0.2s, background-color 0.2s;
     }
-    .fx-input:not([readonly]):focus {
+    #form .fx-input:not([readonly]):focus {
       box-shadow: 0 0 0.3em -0.1em inset;
     }
-    label {
+    #form label {
       display: flex;
       align-items: center;
       justify-content: space-between;
       margin-top: 0.5em;
       white-space: nowrap;
     }
-    input {
+    #form input {
       display: inline-block;
       width: 10em;
       height: 2em;
@@ -94,16 +98,15 @@
       font: 20px 'courier new', monospace;
       margin-left: 0.2em;
     }
-    input:invalid {
-      background-color: #fee;
+    #form input:invalid {
+      background-color: #422;
     }
-
-    .buttons {
+    #form .buttons {
       display: flex;
       padding: 0.5em 0 0;
       gap: 1em;
     }
-    button {
+    #form button {
       width: 50%;
       font: 20px 'courier new', monospace;
       padding: 0.3em;
@@ -111,16 +114,17 @@
       border: none;
       border-radius: 0.2em;
       cursor: pointer;
-      box-shadow: 0 0 0.3em -0.1em;
+      box-shadow: 0 0 0.2em -0.1em #eee;
+      background-color: #999;
       transition: opacity 0.2s, box-shadow 0.2s;
     }
-    button:hover {
-      box-shadow: 0 0 0.4em -0.1em;
+    #form button:hover {
+      box-shadow: 0 0 0.4em -0.1em #eee;
     }
-    button:active {
-      box-shadow: 0 0 0.3em -0.1em;
+    #form button:active {
+      box-shadow: 0 0 0.3em -0.1em #eee;
     }
-    label:has(input:invalid) ~ .buttons > button {
+    #form label:has(input:invalid) ~ .buttons > button {
       pointer-events: none;
       opacity: 0.5;
     }
@@ -182,12 +186,32 @@ html, body {
   user-select: none;
   box-sizing: border-box;
 }
-
+.centered {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.fading {
+  background: transparent;
+  color: transparent;
+  text-shadow: 0 0 1em transparent, 0 0 1em transparent;
+  transition: text-shadow 0.3s linear, transform 0.3s;
+  will-change: text-shadow, transform;
+  pointer-events: none;
+}
+.fading.show {
+  pointer-events: all;
+  text-shadow: 0 0 0 #fff, 0 0 0.25em #fff;
+  transition: text-shadow 2s linear, transform 0.3s;
+}
+.fading:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+}
 .button {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed;
   z-index: 2;
   border: none;
   outline: none;
@@ -197,25 +221,20 @@ html, body {
   margin: 0;
 }
 .button-play {
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: transparent;
-  color: transparent;
   font: bold 120px sans-serif;
   line-height: 1;
-  text-shadow: 0 0 1em transparent, 0 0 1em transparent;
-  transition: text-shadow 0.3s linear, transform 0.3s;
-  will-change: text-shadow, transform;
-  pointer-events: none;
 }
-.button-play:hover {
-  transform: translate(-50%, -50%) scale(1.3);
+.link {
+  font: 30px monospace;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
 }
-.button-play.show {
-  pointer-events: all;
-  text-shadow: 0 0 0 #fff, 0 0 0.25em #fff;
-  transition: text-shadow 2s linear, transform 0.3s
+.link:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+.link.show {
+  text-shadow: 0 0 0 #fff, 0 0 0.1em #fff;
 }
 ` }, document.head);
   }
@@ -233,6 +252,44 @@ html, body {
     const lotrNotes = {
       tracks: [
         [
+          { R: 2.5, G: 0.2, F: 0.1, T: 'triangle' },
+          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+          { l: 1 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
+          { n: 'F4', l: 1 / 4 },
+          { n: 'E4', l: 1 / 4 },
+          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'D4', l: 1 / 16 },
+          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'C4', l: 1 / 16 },
+          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+          { l: 1 / 8 },
+          { n: 'G4', l: 1 / 16 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
+          { n: 'A4', l: 1 / 16 },
+          { n: 'A#4', l: 1 / 16 },
+          { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
+          { n: 'A#4', l: 1 / 16 },
+          { n: 'C5', l: 1 / 16 },
+          { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
+
           { R: 2.5, G: 0.2, F: 0.5, T: 'sine' },
           { n: 'D4', l: 1 / 8 },
           { n: 'E4', l: 1 / 8 },
@@ -276,12 +333,9 @@ html, body {
           { n: 'E4', l: 1 / 2 },
           { n: 'D4', l: 3 / 4 },
 
-          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 },
-          { n: 'D5', l: 1 / 16 },
-          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 },
-          { n: 'E5', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 },
-          { n: 'F#5', l: 1 / 8 },
+          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
           { l: 3 / 8 },
           { n: 'F#5', l: 1 / 8 },
           { l: 1 / 8 },
@@ -292,12 +346,9 @@ html, body {
           { n: 'E5', l: 1 / 8 },
           { l: 1 / 2 },
 
-          { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 },
-          { n: 'B4', l: 1 / 16 },
-          { n: 'C#4', o: 1 / 8, type: 'triangle', g: 0.1 },
-          { n: 'C#5', l: 1 / 8 },
+          { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'A4', l: 1 / 16 },
+          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+          { n: 'C#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 8 },
           { l: 1 / 8 },
           { n: 'C#5', l: 1 / 8 },
           { n: 'C#5', l: 1 / 8 },
@@ -656,8 +707,16 @@ html, body {
 
   const buttonsModule = (function () {
     function Buttons() {
-      this.buttonPlay = E('button', { className: 'button button-play', textContent: '\u25b6' });
+      const href = 'https:\/\/dmytro-bo.github.io/encrypt';
+
+      this.buttonPlay = E('button', { className: 'button button-play centered fading', textContent: '\u25b6' });
+      this.link = E('a', { className: 'link centered fading', href, target: '_blank', textContent: `${href}`, tabIndex: -1 });
     }
+
+    Buttons.prototype.renderLink = function () {
+      mainWrapper.appendChild(this.link);
+      Q(() => toggleClassName(this.link, 'show', true), 100);
+    };
 
     Buttons.prototype.renderPlayButton = function() {
       mainWrapper.appendChild(this.buttonPlay);
@@ -666,7 +725,8 @@ html, body {
       this.buttonPlay.addEventListener('click', e => {
         e.stopPropagation();
         Q(() => toggleClassName(this.buttonPlay, 'show', false))
-          .Q(() => this.buttonPlay.remove(), 300);
+          .Q(() => this.buttonPlay.remove(), 300)
+            .Q(() => this.renderLink(), 2000);
 
         audioModule.song.play();
       });
@@ -698,6 +758,7 @@ html, body {
           if (typeof loaderFn === 'function') return loaderFn;
         } catch (e) {
           console.error('failed to decrypt loader:', e);
+          return null;
         }
         console.error('decrypted data should be a function:', loaderFn)
         return null;

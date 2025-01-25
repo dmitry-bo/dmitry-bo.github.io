@@ -62,7 +62,7 @@
       border: none;
       border-radius: 0.2em;
       box-shadow: 0 0 0.2em -0.1em inset;
-      transition: box-shadow 0.2s;
+      transition: box-shadow 0.2s, background-color 0.2s;
     }
     .fx-input:not([readonly]):focus {
       box-shadow: 0 0 0.3em -0.1em inset;
@@ -74,7 +74,7 @@
       margin-top: 0.5em;
       white-space: nowrap;
     }
-    input[type="text"] {
+    input {
       display: inline-block;
       width: 10em;
       height: 2em;
@@ -82,6 +82,10 @@
       font: 20px 'courier new', monospace;
       margin-left: 0.2em;
     }
+    input:invalid {
+      background-color: #fee;
+    }
+
     .buttons {
       display: flex;
       padding: 0.5em 0 0;
@@ -96,6 +100,7 @@
       border-radius: 0.2em;
       cursor: pointer;
       box-shadow: 0 0 0.3em -0.1em;
+      transition: opacity 0.2s, box-shadow 0.2s;
     }
     button:hover {
       box-shadow: 0 0 0.4em -0.1em;
@@ -103,7 +108,7 @@
     button:active {
       box-shadow: 0 0 0.3em -0.1em;
     }
-    label:has(#key:placeholder-shown) ~ .buttons > button {
+    label:has(input:invalid) ~ .buttons > button {
       pointer-events: none;
       opacity: 0.5;
     }
@@ -116,8 +121,8 @@
       <label>Result:<textarea id="result" readonly class="fx-input"></textarea></label>
     </div>
     <div class="controls">
-      <label>Key:<input class="fx-input" id="key" type="text" placeholder></label>
-      <label>Salt:<input class="fx-input" id="salt" type="text"></label>
+      <label>Key:<input class="fx-input" id="key" type="text" required></label>
+      <label>Seed:<input class="fx-input" id="seed" pattern="\d+" maxlength="16"></label>
       <div class="buttons">
         <button id="encrypt">Encrypt</button>
         <button id="run">Run</button>
@@ -686,47 +691,47 @@ html, body {
         return null;
       }
 
-      function encryptSource(loaderSource, key, salt) {
-        setStorageData(loaderSource, key, salt);
+      function encryptSource(loaderSource, key, seed) {
+        setStorageData(loaderSource, key, seed);
         const sanitizedLoader = loaderSource
           .replace(/\/\/.*$/gm,'')
           .replace(/^\s+/gm, ' ')
           .replace(/\n/gm, '');
-        const saltCode = s2c(salt).reduce((a, b) => a + b, 0);
-        const encryptedLoader = encrypt(sanitizedLoader, key, saltCode);
-        return encryptedLoader + c2ch(saltCode);
+        const encryptedLoader = encrypt(sanitizedLoader, key, seed);
+        return encryptedLoader + c2ch(seed);
       }
 
-      function setStorageData(source, key, salt) {
+      function setStorageData(source, key, seed) {
         localStorage.setItem('source', source);
         localStorage.setItem('key', key);
-        localStorage.setItem('salt', salt);
+        localStorage.setItem('seed', seed);
       }
 
       function getStorageData() {
         const source = localStorage.getItem('source') || '';
         const key = localStorage.getItem('key') || '';
-        const salt = localStorage.getItem('salt') || '';
-        return { source, key, salt };
+        const seed = localStorage.getItem('seed') || '0';
+        return { source, key, seed };
       }
 
       function initForm() {
         const form = document.getElementById('form');
         const keyInput = document.getElementById('key');
-        const saltInput = document.getElementById('salt');
+        const seedInput = document.getElementById('seed');
         const sourceText = document.getElementById('source');
         const resultText = document.getElementById('result');
         const runButton = document.getElementById('run');
         const encryptButton = document.getElementById('encrypt');
 
-        const { source, key, salt } = getStorageData();
+        const data = getStorageData();
 
-        sourceText.value = source || loader?.toString() || '';
-        keyInput.value = key;
-        saltInput.value = salt;
+        sourceText.value = data.source || loader?.toString() || '';
+        keyInput.value = data.key;
+        seedInput.value = data.seed;
 
         const encryptLoader = function() {
-          const encryptedData = encryptSource(sourceText.value, keyInput.value, saltInput.value);
+          seedInput.value = Math.abs(parseInt(seedInput.value)) || 0;
+          const encryptedData = encryptSource(sourceText.value, keyInput.value, +seedInput.value);
 
           navigator.clipboard.writeText(encryptedData);
           console.log(sourceText.value)
@@ -742,6 +747,7 @@ html, body {
         runButton.addEventListener('click', () => {
           if (!keyInput.value) return;
           const loaderFn = decryptLoader(encryptLoader(), keyInput.value);
+
           if (loaderFn) {
             form.style.opacity = '0';
             setTimeout(() => {

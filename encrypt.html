@@ -103,6 +103,10 @@
     button:active {
       box-shadow: 0 0 0.3em -0.1em;
     }
+    label:has(#key:placeholder-shown) ~ .buttons > button {
+      pointer-events: none;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -112,7 +116,7 @@
       <label>Result:<textarea id="result" readonly class="fx-input"></textarea></label>
     </div>
     <div class="controls">
-      <label>Key:<input class="fx-input" id="key" type="text"></label>
+      <label>Key:<input class="fx-input" id="key" type="text" placeholder></label>
       <label>Salt:<input class="fx-input" id="salt" type="text"></label>
       <div class="buttons">
         <button id="encrypt">Encrypt</button>
@@ -121,7 +125,7 @@
     </div>
   </div>
   <script>
-function loader() {
+function loader({ mainWrapper }) {
   function Q(f, d) {
     const o = {Q, _: () => {}}, n = r => setTimeout(() => o._(f(r)), d);
     (this?.Q !== Q) ? n() : (this._ = n);
@@ -147,8 +151,6 @@ function loader() {
     }
   }
 
-
-  const mainWrapper = document.body;
   function initStyles() {
     E('style', { textContent: `
 html, body {
@@ -647,7 +649,7 @@ html, body {
       this.buttonPlay.addEventListener('click', e => {
         e.stopPropagation();
         Q(() => toggleClassName(this.buttonPlay, 'show', false))
-                .Q(() => this.buttonPlay.remove(), 300);
+          .Q(() => this.buttonPlay.remove(), 300);
 
         audioModule.song.play();
       });
@@ -659,8 +661,8 @@ html, body {
   I(() => {
     initStyles();
     Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
-            .Q(() => S(mainWrapper, { backgroundColor: '#000', boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
-            .Q(() => buttonsModule.renderPlayButton(), 0);
+      .Q(() => S(mainWrapper, { backgroundColor: '#000', boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
+      .Q(() => buttonsModule.renderPlayButton(), 0);
   });
 }
   </script>

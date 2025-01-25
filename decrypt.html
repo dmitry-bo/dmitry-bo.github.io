@@ -15,7 +15,7 @@
     function decrypt(s, k, d) {
       const b = s2c(k);
       const bl = b.length;
-      return c2s(s2c(s).map((c, i) => (c - b[bl - (i % bl + 1)] - d) ^ b[i % bl])); // XOR magic
+      return c2s(s2c(s).map((c, i) => (c - b[bl - (i % bl + 1)] - d) ^ b[i % bl]));
     }
 
     function validate() {
@@ -43,7 +43,7 @@
       }
     }
 
-    setTimeout(validate, 100);
+    setTimeout(validate, 1000);
   </script>
 </body>
 </html>

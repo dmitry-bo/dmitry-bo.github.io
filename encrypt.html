@@ -50,6 +50,18 @@
     #source {
       white-space: nowrap;
     }
+    #result {
+      cursor: pointer;
+    }
+    #result:active {
+      background-color: #efe;
+    }
+    #result::placeholder {
+      text-align: center;
+      position: relative;
+      line-height: 0;
+      top: 50%;
+    }
     .controls {
       display: flex;
       flex-direction: column;
@@ -118,7 +130,7 @@
   <div id="form">
     <div class="preview">
       <label>Source function:<textarea id="source" class="fx-input"></textarea></label>
-      <label>Result:<textarea id="result" readonly class="fx-input"></textarea></label>
+      <label>Result:<textarea id="result" readonly class="fx-input" placeholder="click to copy"></textarea></label>
     </div>
     <div class="controls">
       <label>Key:<input class="fx-input" id="key" type="text" required></label>
@@ -729,30 +741,25 @@ html, body {
         keyInput.value = data.key;
         seedInput.value = data.seed;
 
-        const encryptLoader = function() {
+        const getEncryptedLoader = function() {
           seedInput.value = Math.abs(parseInt(seedInput.value)) || 0;
-          const encryptedData = encryptSource(sourceText.value, keyInput.value, +seedInput.value);
-
-          navigator.clipboard.writeText(encryptedData);
-          console.log(sourceText.value)
-          console.log(encryptedData);
-
-          return encryptedData;
+          return encryptSource(sourceText.value, keyInput.value, +seedInput.value);
         }
 
+        resultText.addEventListener('click', event => navigator.clipboard.writeText(event.target.value));
         encryptButton.addEventListener('click', () => {
           if (!keyInput.value) return;
-          resultText.value = encryptLoader();
+          resultText.value = getEncryptedLoader();
         });
         runButton.addEventListener('click', () => {
           if (!keyInput.value) return;
-          const loaderFn = decryptLoader(encryptLoader(), keyInput.value);
+          const loaderFn = decryptLoader(getEncryptedLoader(), keyInput.value);
 
           if (loaderFn) {
             form.style.opacity = '0';
             setTimeout(() => {
               form.remove();
-              loaderFn({ mainWrapper: document.body });
+              loaderFn({mainWrapper: document.body});
             }, 500);
           }
         });

@@ -734,11 +734,12 @@ html, body {
         }
 
         encryptButton.addEventListener('click', () => {
+          if (!keyInput.value) return;
           resultText.value = encryptLoader();
         });
         runButton.addEventListener('click', () => {
+          if (!keyInput.value) return;
           const loaderFn = decryptLoader(encryptLoader(), keyInput.value);
-
           if (loaderFn) {
             form.style.opacity = '0';
             setTimeout(() => {

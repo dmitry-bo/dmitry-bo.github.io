@@ -96,13 +96,14 @@
       color: #ddd;
       background-color: #444;
       box-shadow: 0 0 7px 7px #444;
+      white-space: nowrap;
       text-align: center;
       text-overflow: ellipsis;
       text-decoration: none;
       transition: box-shadow 0.2s, background-color 0.2s;
     }
     #form .reflink::before {
-      content: 'Usage reference: ';
+      content: 'usage reference: ';
       font-size: 0.7em;
     }
     #form .preview label:has(button:active) .reflink {
@@ -167,7 +168,7 @@
       <label>
         <span>Encrypted result:</span>
         <textarea id="result" readonly class="fx-input"></textarea>
-        <a class="reflink" href="https://dmytro-bo.github.io/decrypt.html" target="_blank">https://dmytro-bo.github.io/decrypt.html</a>
+        <a class="reflink" href="https://dmytro-bo.github.io/decrypt" target="_blank">https://dmytro-bo.github.io/decrypt</a>
         <button id="copy">Copy</button>
       </label>
     </div>

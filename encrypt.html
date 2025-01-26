@@ -758,7 +758,7 @@ html, body {
               navigator.clipboard.writeText(resultText.value);
               break;
             case resetButton:
-              sourceText.value = loader?.toString() || '';
+              sourceText.value = loader?.toString() ?? '';
               break;
             case encryptButton:
               if (!keyInput.value) return;
@@ -774,7 +774,9 @@ html, body {
                   loaderFn({ wrapper: document.body });
                 }, 500);
               }
+              break;
           }
+          event.stopPropagation();
         });
       }
 

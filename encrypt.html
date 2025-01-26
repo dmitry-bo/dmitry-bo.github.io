@@ -110,7 +110,6 @@
       background-color: #242;
       box-shadow: 0 0 7px 7px #242;
     }
-
     #source {
       white-space: nowrap;
     }
@@ -133,6 +132,7 @@
       align-items: center;
       justify-content: space-between;
       margin-top: 0.5em;
+      gap: 0.5em;
       white-space: nowrap;
     }
     #form .controls input {
@@ -148,8 +148,8 @@
     }
     #form .buttons {
       display: flex;
-      padding: 0.5em 0 0;
-      gap: 1em;
+      margin-top: 0.5em;
+      gap: 16px;
     }
     #form .controls label:has(input:invalid) ~ .buttons > button {
       pointer-events: none;

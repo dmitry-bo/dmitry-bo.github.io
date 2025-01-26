@@ -29,45 +29,6 @@
       flex-direction: column;
       transition: opacity 0.5s;
     }
-    #form .preview {
-      display: flex;
-      width: 100%;
-      padding: 0 16px;
-      gap: 16px;
-      flex: 1 0 auto;
-    }
-    #form .preview label {
-      width: 50%;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    #form textarea {
-      width: 100%;
-      padding: 0.5em;
-      resize: none;
-      flex: 1 0 auto;
-      font: 16px 'Source Code Pro', monospace;
-    }
-    #source {
-      white-space: nowrap;
-    }
-    #form label:has(button:active) textarea {
-      background-color: #242;
-    }
-    #result::placeholder {
-      text-align: center;
-      position: relative;
-      line-height: 0;
-      top: 50%;
-    }
-    #form .controls {
-      display: flex;
-      flex-direction: column;
-      user-select: none;
-      flex: 0 0 auto;
-      padding: 0 0 16px;
-    }
     #form .fx-input {
       outline: none;
       border: none;
@@ -79,29 +40,6 @@
     }
     #form .fx-input:not([readonly]):focus {
       box-shadow: 0 0 0.3em -0.1em inset;
-    }
-    #form label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 0.5em;
-      white-space: nowrap;
-    }
-    #form input {
-      display: inline-block;
-      width: 10em;
-      height: 2em;
-      padding: 0.3em;
-      font: 20px 'courier new', monospace;
-      margin-left: 0.2em;
-    }
-    #form input:invalid {
-      background-color: #422;
-    }
-    #form .buttons {
-      display: flex;
-      padding: 0.5em 0 0;
-      gap: 1em;
     }
     #form button {
       width: 50%;
@@ -121,7 +59,98 @@
     #form button:active {
       box-shadow: 0 0 0.3em -0.1em #eee;
     }
-    #form label:has(input:invalid) ~ .buttons > button {
+    #form .preview {
+      display: flex;
+      width: 100%;
+      padding: 0 16px;
+      gap: 16px;
+      flex: 1 0 auto;
+    }
+    #form .preview label {
+      width: 50%;
+      margin-top: 0.5em;
+      position: relative;
+      align-items: center;
+      justify-content: space-between;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #form .preview textarea {
+      width: 100%;
+      padding: 0.5em;
+      resize: none;
+      flex: 1 0 auto;
+      font: 16px 'Source Code Pro', monospace;
+    }
+    #form .preview label:has(button:active) textarea {
+      background-color: #242;
+    }
+    #form .preview .reflink {
+      position: absolute;
+      bottom: 4em;
+      max-width: 90%;
+      overflow: hidden;
+      font-size: 15px;
+      opacity: 0.9;
+      color: #ddd;
+      background-color: #444;
+      box-shadow: 0 0 7px 7px #444;
+      text-align: center;
+      text-overflow: ellipsis;
+      text-decoration: none;
+      transition: box-shadow 0.2s, background-color 0.2s;
+    }
+    #form .reflink::before {
+      content: 'Usage reference: ';
+      font-size: 0.7em;
+    }
+    #form .preview label:has(button:active) .reflink {
+      background-color: #242;
+      box-shadow: 0 0 7px 7px #242;
+    }
+
+    #source {
+      white-space: nowrap;
+    }
+    #result::placeholder {
+      text-align: center;
+      position: relative;
+      line-height: 0;
+      top: 50%;
+    }
+    #form .controls {
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      flex: 0 0 auto;
+      padding: 0 0 16px;
+    }
+
+    #form .controls label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 0.5em;
+      white-space: nowrap;
+    }
+    #form .controls input {
+      display: inline-block;
+      width: 10em;
+      height: 2em;
+      padding: 0.3em;
+      font: 20px 'courier new', monospace;
+      margin-left: 0.2em;
+    }
+    #form .controls input:invalid {
+      background-color: #422;
+    }
+    #form .buttons {
+      display: flex;
+      padding: 0.5em 0 0;
+      gap: 1em;
+    }
+    #form .controls label:has(input:invalid) ~ .buttons > button {
       pointer-events: none;
       opacity: 0.5;
     }
@@ -130,8 +159,17 @@
 <body>
   <div id="form">
     <div class="preview">
-      <label>Source:<textarea id="source" class="fx-input"></textarea><button id="reset">Reset</button></label>
-      <label>Result:<textarea id="result" readonly class="fx-input"></textarea><button id="copy">Copy</button></label>
+      <label>
+        <span>Source function:</span>
+        <textarea id="source" class="fx-input"></textarea>
+        <button id="reset">Reset</button>
+      </label>
+      <label>
+        <span>Encrypted result:</span>
+        <textarea id="result" readonly class="fx-input"></textarea>
+        <a class="reflink" href="https://dmytro-bo.github.io/decrypt.html" target="_blank">https://dmytro-bo.github.io/decrypt.html</a>
+        <button id="copy">Copy</button>
+      </label>
     </div>
     <div class="controls">
       <label>Key:<input class="fx-input" id="key" type="text" required></label>
@@ -141,6 +179,7 @@
         <button id="run">Run</button>
       </div>
     </div>
+
   </div>
   <script>
 function loader({ wrapper }) {

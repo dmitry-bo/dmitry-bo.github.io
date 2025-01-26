@@ -52,10 +52,7 @@
     #source {
       white-space: nowrap;
     }
-    #result {
-      cursor: pointer;
-    }
-    #form #result:active {
+    #form label:has(button:active) textarea {
       background-color: #242;
     }
     #result::placeholder {
@@ -133,8 +130,8 @@
 <body>
   <div id="form">
     <div class="preview">
-      <label>Source:<textarea id="source" class="fx-input"></textarea></label>
-      <label>Result:<textarea id="result" readonly class="fx-input" placeholder="click to copy"></textarea></label>
+      <label>Source:<textarea id="source" class="fx-input"></textarea><button id="reset">Reset</button></label>
+      <label>Result:<textarea id="result" readonly class="fx-input"></textarea><button id="copy">Copy</button></label>
     </div>
     <div class="controls">
       <label>Key:<input class="fx-input" id="key" type="text" required></label>
@@ -727,9 +724,9 @@ html, body {
       }
 
       function getStorageData() {
-        const source = localStorage.getItem('source') || '';
-        const key = localStorage.getItem('key') || '';
-        const seed = localStorage.getItem('seed') || '0';
+        const source = localStorage.getItem('source');
+        const key = localStorage.getItem('key');
+        const seed = localStorage.getItem('seed');
         return { source, key, seed };
       }
 
@@ -739,35 +736,44 @@ html, body {
         const seedInput = document.getElementById('seed');
         const sourceText = document.getElementById('source');
         const resultText = document.getElementById('result');
+        const copyButton = document.getElementById('copy');
+        const resetButton = document.getElementById('reset');
         const runButton = document.getElementById('run');
         const encryptButton = document.getElementById('encrypt');
 
-        const data = getStorageData();
+        const storedData = getStorageData();
 
-        sourceText.value = data.source || loader?.toString() || '';
-        keyInput.value = data.key;
-        seedInput.value = data.seed;
+        sourceText.value = storedData.source ?? loader?.toString() ?? '';
+        keyInput.value = storedData.key ?? '';
+        seedInput.value = storedData.seed ?? 0;
 
         const getEncryptedLoader = function() {
           seedInput.value = Math.abs(parseInt(seedInput.value)) || 0;
           return encryptSource(sourceText.value, keyInput.value, +seedInput.value);
         }
 
-        resultText.addEventListener('click', event => navigator.clipboard.writeText(event.target.value));
-        encryptButton.addEventListener('click', () => {
-          if (!keyInput.value) return;
-          resultText.value = getEncryptedLoader();
-        });
-        runButton.addEventListener('click', () => {
-          if (!keyInput.value) return;
-          const loaderFn = decryptLoader(getEncryptedLoader(), keyInput.value);
-
-          if (loaderFn) {
-            form.style.opacity = '0';
-            setTimeout(() => {
-              form.remove();
-              loaderFn({ wrapper: document.body });
-            }, 500);
+        form.addEventListener('click', event => {
+          switch (event.target) {
+            case copyButton:
+              navigator.clipboard.writeText(resultText.value);
+              break;
+            case resetButton:
+              sourceText.value = loader?.toString() || '';
+              break;
+            case encryptButton:
+              if (!keyInput.value) return;
+              resultText.value = getEncryptedLoader();
+              break
+            case runButton:
+              if (!keyInput.value) return;
+              const loaderFn = decryptLoader(getEncryptedLoader(), keyInput.value);
+              if (loaderFn) {
+                form.style.opacity = '0';
+                setTimeout(() => {
+                  form.remove();
+                  loaderFn({ wrapper: document.body });
+                }, 500);
+              }
           }
         });
       }

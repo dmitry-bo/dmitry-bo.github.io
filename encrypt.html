@@ -133,7 +133,7 @@
 <body>
   <div id="form">
     <div class="preview">
-      <label>Source function:<textarea id="source" class="fx-input"></textarea></label>
+      <label>Source:<textarea id="source" class="fx-input"></textarea></label>
       <label>Result:<textarea id="result" readonly class="fx-input" placeholder="click to copy"></textarea></label>
     </div>
     <div class="controls">
@@ -152,17 +152,9 @@ function loader({ mainWrapper }) {
     (this?.Q !== Q) ? n() : (this._ = n);
     return o;
   }
-  function S(e, s) {
-    Object.keys(s || {}).forEach(k => e.style[k] = s[k]);
-  }
+  function S(e, s) { Object.keys(s || {}).forEach(k => e.style[k] = s[k]); }
   function E(t, a, p) { const n = document.createElement(t); Object.keys(a).forEach(k => n[k] = a[k]); p && p.append(n); return n; }
-  function I(initCb) {
-    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
-      initCb();
-    } else {
-      document.addEventListener('DOMContentLoaded', initCb);
-    }
-  }
+
   function toggleClassName(element, className, state) {
     const hasClassName = element.className.indexOf(className) >= 0;
     if (hasClassName ? state === undefined : state === true) {
@@ -230,6 +222,11 @@ html, body {
   text-decoration: none;
   white-space: nowrap;
 }
+.link::before {
+  content: 'details at ';
+  font-size: 0.5em;
+  opacity: 0.7
+}
 .link:hover {
   transform: translate(-50%, -50%) scale(1.05);
 }
@@ -249,385 +246,335 @@ html, body {
       'C5': 523.25, 'C#5': 554.36, 'D5': 587.32, 'D#5': 622.26, 'E5': 659.26, 'F5': 698.46, 'F#5': 739.98, 'G5': 784.00, 'G#5': 830.60, 'A5': 880.00, 'A#5': 932.32, 'B5': 987.75,
       'C6': 1046.50, 'C#6': 1108.70, 'D6': 1174.60, 'D#6': 1244.50, 'E6': 1318.50, 'F6': 1396.90, 'F#6': 1480.00, 'G6': 1568.00, 'G#6': 1661.20, 'A6': 1720.00, 'A#6': 1864.60, 'B6': 1975.50,
     };
-    const lotrNotes = {
-      tracks: [
-        [
-          { R: 2.5, G: 0.2, F: 0.1, T: 'triangle' },
-          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
-          { l: 1 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
-          { n: 'F4', l: 1 / 4 },
-          { n: 'E4', l: 1 / 4 },
-          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
-          { l: 1 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#4', l: 1 / 16 },
-          { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
-          { n: 'A#4', l: 1 / 16 },
-          { n: 'C5', l: 1 / 16 },
-          { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
+    const lotrNotes = [
+      { R: 2.5, G: 0.2, F: 0.1, T: 'triangle' },
+      { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+      { l: 1 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
+      { n: 'F4', l: 1 / 4 },
+      { n: 'E4', l: 1 / 4 },
+      { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+      { l: 1 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#4', l: 1 / 16 },
+      { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
+      { n: 'A#4', l: 1 / 16 },
+      { n: 'C5', l: 1 / 16 },
+      { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
 
-          { R: 2.5, G: 0.2, F: 0.5, T: 'sine' },
-          { n: 'D4', l: 1 / 8 },
-          { n: 'E4', l: 1 / 8 },
-          { n: 'F#4', l: 1 / 4 },
-          { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', l: 1 / 8 },
-          { n: 'E4', l: 1 / 8 },
-          { n: 'D4', l: 3 / 16 },
-          { n: 'E4', l: 1 / 16 },
-          { n: 'D4', l: 3 / 4 },
+      { R: 2.5, G: 0.2, F: 0.5, T: 'sine' },
+      { n: 'D4', l: 1 / 8 },
+      { n: 'E4', l: 1 / 8 },
+      { n: 'F#4', l: 1 / 4 },
+      { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', l: 1 / 8 },
+      { n: 'E4', l: 1 / 8 },
+      { n: 'D4', l: 3 / 16 },
+      { n: 'E4', l: 1 / 16 },
+      { n: 'D4', l: 3 / 4 },
 
-          { n: 'F#4', l: 1 / 8 },
-          { n: 'A4', l: 1 / 8 },
-          { n: 'B4', l: 1 / 4 },
-          { n: 'D5', l: 1 / 4 },
-          { n: 'C#5', l: 1 / 4 },
-          { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', l: 1 / 4 },
+      { n: 'F#4', l: 1 / 8 },
+      { n: 'A4', l: 1 / 8 },
+      { n: 'B4', l: 1 / 4 },
+      { n: 'D5', l: 1 / 4 },
+      { n: 'C#5', l: 1 / 4 },
+      { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', l: 1 / 4 },
 
-          { n: 'D4', l: 1 / 8 },
-          { n: 'E4', l: 1 / 8 },
-          { n: 'F#4', l: 1 / 4 },
-          { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', l: 1 / 8 },
-          { n: 'E4', l: 1 / 8 },
-          { n: 'D4', l: 3 / 16 },
-          { n: 'E4', l: 1 / 16 },
-          { n: 'D4', l: 3 / 4 },
+      { n: 'D4', l: 1 / 8 },
+      { n: 'E4', l: 1 / 8 },
+      { n: 'F#4', l: 1 / 4 },
+      { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', l: 1 / 8 },
+      { n: 'E4', l: 1 / 8 },
+      { n: 'D4', l: 3 / 16 },
+      { n: 'E4', l: 1 / 16 },
+      { n: 'D4', l: 3 / 4 },
 
-          { n: 'F#4', l: 1 / 8 },
-          { n: 'A4', l: 1 / 8 },
-          { n: 'B4', l: 1 / 2 },
-          { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', l: 1 / 4 },
-          { n: 'F#4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', l: 1 / 2 },
-          { n: 'D4', l: 3 / 4 },
+      { n: 'F#4', l: 1 / 8 },
+      { n: 'A4', l: 1 / 8 },
+      { n: 'B4', l: 1 / 2 },
+      { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', l: 1 / 4 },
+      { n: 'F#4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', l: 1 / 2 },
+      { n: 'D4', l: 3 / 4 },
 
-          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
-          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
-          { l: 3 / 8 },
-          { n: 'F#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'F#5', l: 1 / 8 },
-          { n: 'A5', l: 1 / 8 },
-          { n: 'E5', l: 1 / 8 },
-          { n: 'D5', l: 1 / 8 },
-          { n: 'E5', l: 1 / 8 },
-          { l: 1 / 2 },
+      { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+      { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+      { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+      { l: 3 / 8 },
+      { n: 'F#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'F#5', l: 1 / 8 },
+      { n: 'A5', l: 1 / 8 },
+      { n: 'E5', l: 1 / 8 },
+      { n: 'D5', l: 1 / 8 },
+      { n: 'E5', l: 1 / 8 },
+      { l: 1 / 2 },
 
-          { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'A4', l: 1 / 16 },
-          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
-          { n: 'C#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'C#5', l: 1 / 8 },
-          { n: 'C#5', l: 1 / 8 },
-          { n: 'D5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'B4', l: 1 / 8 },
-          { n: 'F#4', l: 1 / 4 },
-          { l: 1 / 8 },
-          { n: 'A4', l: 1 / 8 },
-          { n: 'E4', l: 1 / 4 },
-          { l: 1 / 4 },
+      { n: 'A3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'A4', l: 1 / 16 },
+      { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+      { n: 'C#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'C#5', l: 1 / 8 },
+      { n: 'C#5', l: 1 / 8 },
+      { n: 'D5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'B4', l: 1 / 8 },
+      { n: 'F#4', l: 1 / 4 },
+      { l: 1 / 8 },
+      { n: 'A4', l: 1 / 8 },
+      { n: 'E4', l: 1 / 4 },
+      { l: 1 / 4 },
 
-          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
-          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'F#5', l: 1 / 8 },
-          { l: 3 / 8 },
-          { n: 'A5', l: 1 / 8 },
-          { n: 'F#5', l: 1 / 8 },
-          { n: 'E5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'D5', l: 1 / 8 },
-          { n: 'E5', l: 1 / 8 },
-          { n: 'C#5', l: 1 / 8 },
-          { l: 1 / 8 },
+      { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+      { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+      { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'F#5', l: 1 / 8 },
+      { l: 3 / 8 },
+      { n: 'A5', l: 1 / 8 },
+      { n: 'F#5', l: 1 / 8 },
+      { n: 'E5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'D5', l: 1 / 8 },
+      { n: 'E5', l: 1 / 8 },
+      { n: 'C#5', l: 1 / 8 },
+      { l: 1 / 8 },
 
-          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
-          { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
-          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
-          { n: 'B3', o: 3 / 4, type: 'triangle', g: 0.1 }, { n: 'B4', l: 3 / 4 },
-          { l: 1 / 16},
-          { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
-          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
-          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
-          { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
-          { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
-          { l: 1 / 8 },
-          { n: 'A4', l: 1 / 8 },
-          { n: 'F#4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', l: 3 / 8 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'E4', l: 1 / 16 },
-          { n: 'F#4', l: 3 / 4 },
-          { l: 1 / 8 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 2 },
-          { n: 'E4', l: 1 / 2 },
+      { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+      { n: 'D4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D5', l: 1 / 16 },
+      { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+      { n: 'B3', o: 3 / 4, type: 'triangle', g: 0.1 }, { n: 'B4', l: 3 / 4 },
+      { l: 1 / 16},
+      { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
+      { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+      { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+      { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
+      { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
+      { l: 1 / 8 },
+      { n: 'A4', l: 1 / 8 },
+      { n: 'F#4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', l: 3 / 8 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'E4', l: 1 / 16 },
+      { n: 'F#4', l: 3 / 4 },
+      { l: 1 / 8 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 2 },
+      { n: 'E4', l: 1 / 2 },
 
-          { n: 'D#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D#5', l: 1 / 16 },
-          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
-          { l: 3 / 8 },
-          { n: 'F#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
-          { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
-          { n: 'G#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'G#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'G#5', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'G#5', l: 1 / 8 },
+      { n: 'D#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'D#5', l: 1 / 16 },
+      { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+      { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+      { l: 3 / 8 },
+      { n: 'F#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'F#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 8 },
+      { n: 'E4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'E5', l: 1 / 16 },
+      { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
+      { n: 'G#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'G#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'G#5', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'G#5', l: 1 / 8 },
 
-          { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
-          { n: 'G#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'G#5', l: 1 / 16 },
-          { n: 'A#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'A#5', l: 1 / 8 },
-          { l: 1 / 4 },
-          { n: 'A#5', l: 1 / 8 },
-          { n: 'A#5', l: 1 / 4 },
-          { n: 'A#5', l: 1 / 16 },
-          { n: 'A#5', l: 1 / 16 },
-          { n: 'A#5', l: 3 / 4 },
+      { n: 'F#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#5', l: 1 / 16 },
+      { n: 'G#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'G#5', l: 1 / 16 },
+      { n: 'A#4', o: 1 / 8, type: 'triangle', g: 0.1 }, { n: 'A#5', l: 1 / 8 },
+      { l: 1 / 4 },
+      { n: 'A#5', l: 1 / 8 },
+      { n: 'A#5', l: 1 / 4 },
+      { n: 'A#5', l: 1 / 16 },
+      { n: 'A#5', l: 1 / 16 },
+      { n: 'A#5', l: 3 / 4 },
 
-          { l: 1 / 4 },
-          { F: 0.5, T: 'triangle' },
-          { n: 'D3', o: 1 / 4 }, { n: 'D4', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'F#3', o: 1 / 4 }, { n: 'F#4', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'D3', o: 1 / 8 }, { n: 'D4', l: 1 / 16 },
-          { l: 1 / 16 },
-          { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 16 },
-          { l: 1 / 16 },
-          { l: 1 / 4 },
-          { n: 'B3', o: 1 / 4 }, { n: 'B4', l: 1 / 8 },
-          { l: 1 / 2 },
+      { l: 1 / 4 },
+      { F: 0.5, T: 'triangle' },
+      { n: 'D3', o: 1 / 4 }, { n: 'D4', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'F#3', o: 1 / 4 }, { n: 'F#4', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'D3', o: 1 / 8 }, { n: 'D4', l: 1 / 16 },
+      { l: 1 / 16 },
+      { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 16 },
+      { l: 1 / 16 },
+      { l: 1 / 4 },
+      { n: 'B3', o: 1 / 4 }, { n: 'B4', l: 1 / 8 },
+      { l: 1 / 2 },
 
-          { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 8 },
-          { n: 'B3', o: 1 / 8 }, { n: 'B4', l: 1 / 8 },
-          { n: 'C#4', o: 1 / 8 }, { n: 'C#5', l: 1 / 8 },
-          { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
-          { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
-          { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
-          { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
-          { n: 'E4', o: 1 / 4 }, { n: 'E5', l: 1 / 4 },
+      { n: 'F#3', o: 1 / 8 }, { n: 'F#4', l: 1 / 8 },
+      { n: 'B3', o: 1 / 8 }, { n: 'B4', l: 1 / 8 },
+      { n: 'C#4', o: 1 / 8 }, { n: 'C#5', l: 1 / 8 },
+      { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
+      { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
+      { n: 'D4', o: 1 / 4 }, { n: 'D5', l: 1 / 4 },
+      { n: 'A3', o: 1 / 4 }, { n: 'A4', l: 1 / 4 },
+      { n: 'E4', o: 1 / 4 }, { n: 'E5', l: 1 / 4 },
 
-          { F: 1, T: 'sine', G: 0.5 },
-          { n: 'E5', l: 1 / 16 },
-          { n: 'F#5', l: 1 / 16 },
-          { n: 'G5', l: 1 / 8 },
-          { n: 'G5', l: 1 / 4 },
-          { n: 'D5', l: 1 / 16 },
-          { n: 'E5', l: 1 / 16 },
-          { n: 'F#5', l: 1 / 8 },
-          { n: 'F#5', l: 1 / 4 },
-          { n: 'A5', l: 1 / 4 },
-          { n: 'F#5', l: 1 / 16 },
-          { n: 'A5', l: 1 / 16 },
-          { n: 'B5', l: 1 / 2 },
+      { F: 1, T: 'sine', G: 0.5 },
+      { n: 'E5', l: 1 / 16 },
+      { n: 'F#5', l: 1 / 16 },
+      { n: 'G5', l: 1 / 8 },
+      { n: 'G5', l: 1 / 4 },
+      { n: 'D5', l: 1 / 16 },
+      { n: 'E5', l: 1 / 16 },
+      { n: 'F#5', l: 1 / 8 },
+      { n: 'F#5', l: 1 / 4 },
+      { n: 'A5', l: 1 / 4 },
+      { n: 'F#5', l: 1 / 16 },
+      { n: 'A5', l: 1 / 16 },
+      { n: 'B5', l: 1 / 2 },
 
-          { G: 0.3 },
-          { l: 3 / 8 },
-          { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
-          { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
-          { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
-          { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
-          { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
-          { l: 1 / 8 },
-          { n: 'A4', l: 1 / 8 },
-          { n: 'F#4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', l: 3 / 8 },
-          { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', l: 1 / 16 },
-          { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
-          { l: 1 / 8 },
-          { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
-          { l: 7 / 8 },
+      { G: 0.3 },
+      { l: 3 / 8 },
+      { n: 'F#3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'F#4', l: 1 / 16 },
+      { n: 'B3', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'B4', l: 1 / 16 },
+      { n: 'C#4', o: 1 / 16, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 1 / 16 },
+      { n: 'D4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'D5', l: 3 / 8 },
+      { n: 'C#4', o: 3 / 8, type: 'triangle', g: 0.1 }, { n: 'C#5', l: 3 / 8 },
+      { l: 1 / 8 },
+      { n: 'A4', l: 1 / 8 },
+      { n: 'F#4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', l: 3 / 8 },
+      { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', l: 1 / 16 },
+      { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
+      { l: 1 / 8 },
+      { n: 'D3', o: 1 / 4, type: 'triangle', g: 0.05 }, { n: 'D4', l: 1 / 8 },
+      { l: 7 / 8 },
 
-          { F: 0.5, G: 0.3 },
-          { n: 'D3', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
-          { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
-          { n: 'F#3', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
-          { n: 'A3', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
-          { n: 'F#3', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
-          { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
-          { n: 'D3', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
-          { n: 'E3', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
-          { n: 'D3', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
+      { F: 0.5, G: 0.3 },
+      { n: 'D3', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
+      { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+      { n: 'F#3', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
+      { n: 'A3', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
+      { n: 'F#3', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
+      { n: 'E3', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+      { n: 'D3', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
+      { n: 'E3', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
+      { n: 'D3', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
 
-          { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
-          { n: 'A4', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
-          { n: 'B4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 4 },
-          { n: 'D5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'D5', l: 1 / 4 },
-          { n: 'C#5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'C#5', l: 1 / 4 },
-          { n: 'A4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
-          { n: 'G4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
-          { n: 'F#4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
-          { n: 'E4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 4 },
+      { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
+      { n: 'A4', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
+      { n: 'B4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 4 },
+      { n: 'D5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'D5', l: 1 / 4 },
+      { n: 'C#5', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'C#5', l: 1 / 4 },
+      { n: 'A4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
+      { n: 'G4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
+      { n: 'F#4', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
+      { n: 'E4', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 4 },
 
-          { n: 'D4', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
-          { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
-          { n: 'F#4', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
-          { n: 'A4', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
-          { n: 'F#4', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
-          { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
-          { n: 'D4', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
-          { n: 'E4', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
-          { n: 'D4', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
+      { n: 'D4', o: 1 / 8, g: 0.05 }, { n: 'D4', l: 1 / 8 },
+      { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+      { n: 'F#4', o: 1 / 4, g: 0.05 }, { n: 'F#4', l: 1 / 4 },
+      { n: 'A4', o: 1 / 4, g: 0.05 }, { n: 'A4', l: 1 / 4 },
+      { n: 'F#4', o: 1 / 8, g: 0.05 }, { n: 'F#4', l: 1 / 8 },
+      { n: 'E4', o: 1 / 8, g: 0.05 }, { n: 'E4', l: 1 / 8 },
+      { n: 'D4', o: 3 / 16, g: 0.05 }, { n: 'D4', l: 3 / 16 },
+      { n: 'E4', o: 1 / 16, g: 0.05 }, { n: 'E4', l: 1 / 16 },
+      { n: 'D4', o: 3 / 4, g: 0.05 }, { n: 'D4', l: 3 / 4 },
 
-          { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
-          { n: 'A3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
-          { n: 'B3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 2 },
-          { n: 'A3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
-          { n: 'F#3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 4 },
-          { n: 'F#3', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
-          { n: 'G3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
-          { n: 'F#3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
-          { n: 'E3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 2 },
+      { n: 'F#3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 8 },
+      { n: 'A3', o: 1 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 8 },
+      { n: 'B3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'B4', l: 1 / 2 },
+      { n: 'A3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'A4', l: 1 / 4 },
+      { n: 'F#3', o: 1 / 4, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 4 },
+      { n: 'F#3', o: 3 / 8, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 3 / 8 },
+      { n: 'G3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'G4', l: 1 / 16 },
+      { n: 'F#3', o: 1 / 16, t: 'triangle', g: 0.02, f: 0 }, { n: 'F#4', l: 1 / 16 },
+      { n: 'E3', o: 1 / 2, t: 'triangle', g: 0.02, f: 0 }, { n: 'E4', l: 1 / 2 },
 
-          { T: 'triangle', G: 0.2, F: 0.1 },
-          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
-          { l: 1 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
-          { n: 'F4', l: 1 / 4 },
-          { n: 'E4', l: 1 / 4 },
-          { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'D4', l: 1 / 16 },
-          { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'C4', l: 1 / 16 },
-          { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
-          { l: 1 / 8 },
-          { n: 'G4', l: 1 / 16 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
-          { n: 'A4', l: 1 / 16 },
-          { n: 'A#4', l: 1 / 16 },
-          { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
-          { n: 'A#4', l: 1 / 16 },
-          { n: 'C5', l: 1 / 16 },
-          { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
-        ],
-      ],
-    };
-
-    function AudioModule() {
-      this.audioCtx = null;
-      this.song = new Song(lotrNotes);
-    }
-
-    function Song(params) {
-      this.ctxTime = 0;
-      this.songPlayedTime = 0;
-      this.tracks = params.tracks.map(notes => new Track(notes));
-      this.duration = Math.max(...this.tracks.map(track => track.duration));
-    }
-
-    Song.prototype.play = function() {
-      const audioCtx = audioModule.getCtx();
-      this.ctxTime = audioCtx.currentTime;
-      if (this.songPlayedTime > this.duration) this.songPlayedTime = 0;
-      this.tracks.forEach(track => track.play(audioCtx, this.ctxTime, this.songPlayedTime));
-    };
-
-    Song.prototype.stop = function() {
-      const audioCtx = audioModule.getCtx();
-      const ctxStopTime = audioCtx.currentTime;
-      this.songPlayedTime += ctxStopTime - this.ctxTime;
-      this.tracks.forEach(track => track.stop(ctxStopTime));
-    };
+      { T: 'triangle', G: 0.2, F: 0.1 },
+      { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 8, g: 0.1  }, { n: 'A3', o: 3 / 8, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+      { l: 1 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8, g: 0.1 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'F2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'F3', o: 3 / 8, g: 0.1 }, { n: 'F4', l: 3 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'G2', t: 'sine', o: 1, g: 0.3 }, { n: 'G3', o: 1 / 2, g: 0.1 }, { n: 'G4', l: 1 / 2 },
+      { n: 'F4', l: 1 / 4 },
+      { n: 'E4', l: 1 / 4 },
+      { n: 'D2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 8 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'D4', l: 1 / 16 },
+      { n: 'C2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'C3', o: 3 / 8, g: 0.1  }, { n: 'B#3', o: 3 / 8, g: 0.1  }, { n: 'C4', l: 3 / 8 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'C4', l: 1 / 16 },
+      { n: 'D2', t: 'sine', o: 3 / 2, g: 0.3 }, { n: 'D3', o: 3 / 4, g: 0.1  }, { n: 'A3', o: 3 / 4, g: 0.1  }, { n: 'D4', l: 3 / 4 },
+      { l: 1 / 8 },
+      { n: 'G4', l: 1 / 16 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#2', t: 'sine', o: 3 / 4, g: 0.3 }, { n: 'A#3', o: 3 / 8 }, { n: 'A#4', l: 3 / 8 },
+      { n: 'A4', l: 1 / 16 },
+      { n: 'A#4', l: 1 / 16 },
+      { n: 'C3', t: 'sine', o: 3 / 4, g: 0.2 }, { n: 'C4', o: 3 / 8 }, { n: 'C5', l: 3 / 8 },
+      { n: 'A#4', l: 1 / 16 },
+      { n: 'C5', l: 1 / 16 },
+      { n: 'D3', t: 'sine', o: 2, g: 0.1 }, { n: 'D4', o: 1 }, { n: 'D5', l: 1 },
+    ];
 
     function Track(notes) {
       this.mainOscillatorType = 'sine';
       this.mainGain = 0.5;
       this.mainRate = 1;
       this.mainFadeRatio = 0.5;
-      this.duration = 0;
       this.notesData = this.createNotesData(notes);
-      this.playDataSet = new Set();
     }
 
-    Track.prototype.play = function(audioCtx, ctxTime, songPlayedTime) {
-      this.notesData.forEach(noteData => {
-        if (noteData.trackTime >= songPlayedTime) {
-          this.playNote(noteData, audioCtx, ctxTime - songPlayedTime);
-        }
-      });
+    Track.prototype.play = function(audioCtx) {
+      this.notesData.forEach(noteData => this.playNote(noteData, audioCtx));
     };
 
-    Track.prototype.stop = function(ctxStopTime) {
-      this.playDataSet.forEach(({ gainNode, oscillator }) => {
-        gainNode?.gain.setValueAtTime(0.01, ctxStopTime + 1 / 128);
-        if (oscillator) {
-          oscillator.stop(ctxStopTime + 1 / 128);
-          oscillator.onended = () => {
-            gainNode?.disconnect();
-            oscillator.disconnect();
-          }
-        }
-      });
-      this.playDataSet.clear();
-    };
-
-    Track.prototype.playNote = function(noteData, audioCtx, baseTime) {
-      const ctxTime = baseTime + noteData.trackTime;
+    Track.prototype.playNote = function(noteData, audioCtx) {
+      const ctxTime = noteData.trackTime;
       const playData = { ctxTime };
 
       if (typeof noteData.frequency === 'number') {
@@ -652,12 +599,9 @@ html, body {
         gainNode.gain.exponentialRampToValueAtTime(0.01, ctxTime + noteData.duration);
 
         oscillator.stop(ctxTime + noteData.duration);
-
-        this.playDataSet.add(playData);
         oscillator.onended = () => {
           gainNode.disconnect();
           oscillator.disconnect();
-          this.playDataSet.delete(playData);
         };
       }
     };
@@ -665,7 +609,7 @@ html, body {
     Track.prototype.createNotesData = function(notes) {
       let nextTime = 0;
 
-      const notesData = [...notes].reduce((data, params) => {
+      return [...notes].reduce((data, params) => {
         const noteData = {};
 
         if (typeof params.G === 'number') { this.mainGain = params.G; }
@@ -692,55 +636,58 @@ html, body {
         data.push(noteData);
         return data;
       }, []);
-
-      this.duration = nextTime;
-      return notesData;
     };
+
+    function AudioModule() {
+      this.track = new Track(lotrNotes);
+    }
 
     AudioModule.prototype.getCtx = function() {
       this.audioCtx = this.audioCtx || new window.AudioContext();
       return this.audioCtx;
     };
 
+    AudioModule.prototype.play = function () {
+      const audioCtx = this.getCtx();
+      this.track.play(audioCtx);
+    };
+
     return new AudioModule();
   })();
 
-  const buttonsModule = (function () {
-    function Buttons() {
-      const href = 'https:\/\/dmytro-bo.github.io/encrypt';
+  function renderLink() {
+    const href = 'https:\/\/dmytro-bo.github.io/encrypt';
+    const link = E('a', { className: 'link centered fading', href, target: '_blank', textContent: `${href}`, tabIndex: -1 });
+    mainWrapper.appendChild(link);
+    Q(() => toggleClassName(link, 'show', true), 100);
+  }
 
-      this.buttonPlay = E('button', { className: 'button button-play centered fading', textContent: '\u25b6' });
-      this.link = E('a', { className: 'link centered fading', href, target: '_blank', textContent: `${href}`, tabIndex: -1 });
-    }
+  function renderPlayButton() {
+    const buttonEl = E('button', { className: 'button button-play centered fading', textContent: '\u25b6' });
 
-    Buttons.prototype.renderLink = function () {
-      mainWrapper.appendChild(this.link);
-      Q(() => toggleClassName(this.link, 'show', true), 100);
+    mainWrapper.appendChild(buttonEl);
+    Q(() => toggleClassName(buttonEl, 'show', true), 500);
+
+    const clickHandler = event => {
+      event.stopPropagation();
+      buttonEl.removeEventListener('click', clickHandler);
+      toggleClassName(buttonEl, 'show', false);
+      audioModule.play();
+      Q(() => buttonEl.remove(), 300)
+        .Q(() => renderLink(), 3000);
     };
 
-    Buttons.prototype.renderPlayButton = function() {
-      mainWrapper.appendChild(this.buttonPlay);
-      Q(() => toggleClassName(this.buttonPlay, 'show', true), 500);
+    buttonEl.addEventListener('click', clickHandler);
+  }
 
-      this.buttonPlay.addEventListener('click', e => {
-        e.stopPropagation();
-        Q(() => toggleClassName(this.buttonPlay, 'show', false))
-          .Q(() => this.buttonPlay.remove(), 300)
-            .Q(() => this.renderLink(), 2000);
-
-        audioModule.song.play();
-      });
-    };
-
-    return new Buttons();
-  })();
-
-  I(() => {
+  function start() {
     initStyles();
-    Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }))
+    Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }), 100)
       .Q(() => S(mainWrapper, { backgroundColor: '#000', boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
-      .Q(() => buttonsModule.renderPlayButton(), 0);
-  });
+        .Q(() => renderPlayButton());
+  }
+
+  start();
 }
   </script>
   <script>

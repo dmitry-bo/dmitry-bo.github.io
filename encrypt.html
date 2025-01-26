@@ -682,8 +682,8 @@ html, body {
 
   function start() {
     initStyles();
-    Q(() => S(mainWrapper, { willChange: 'background-color, box-shadow', transition: 'background-color 1s, box-shadow 1s' }), 100)
-      .Q(() => S(mainWrapper, { backgroundColor: '#000', boxShadow: '0 0 max(50vw, 50vh) #000 inset' }), 100)
+    Q(() => S(mainWrapper, { willChange: 'background-color', transition: 'background-color 1s' }), 100)
+      .Q(() => S(mainWrapper, { backgroundColor: '#000' }), 100)
         .Q(() => renderPlayButton());
   }
 

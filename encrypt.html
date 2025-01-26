@@ -146,7 +146,7 @@
     </div>
   </div>
   <script>
-function loader({ mainWrapper }) {
+function loader({ wrapper }) {
   function Q(f, d) {
     const o = {Q, _: () => {}}, n = r => setTimeout(() => o._(f(r)), d);
     (this?.Q !== Q) ? n() : (this._ = n);
@@ -658,14 +658,14 @@ html, body {
   function renderLink() {
     const href = 'https:\/\/dmytro-bo.github.io/encrypt';
     const link = E('a', { className: 'link centered fading', href, target: '_blank', textContent: `${href}`, tabIndex: -1 });
-    mainWrapper.appendChild(link);
+    wrapper.appendChild(link);
     Q(() => toggleClassName(link, 'show', true), 100);
   }
 
   function renderPlayButton() {
     const buttonEl = E('button', { className: 'button button-play centered fading', textContent: '\u25b6' });
 
-    mainWrapper.appendChild(buttonEl);
+    wrapper.appendChild(buttonEl);
     Q(() => toggleClassName(buttonEl, 'show', true), 500);
 
     const clickHandler = event => {
@@ -682,8 +682,8 @@ html, body {
 
   function start() {
     initStyles();
-    Q(() => S(mainWrapper, { willChange: 'background-color', transition: 'background-color 1s' }), 100)
-      .Q(() => S(mainWrapper, { backgroundColor: '#000' }), 100)
+    Q(() => S(wrapper, { willChange: 'background-color', transition: 'background-color 1s' }), 100)
+      .Q(() => S(wrapper, { backgroundColor: '#000' }), 100)
         .Q(() => renderPlayButton());
   }
 
@@ -767,7 +767,7 @@ html, body {
             form.style.opacity = '0';
             setTimeout(() => {
               form.remove();
-              loaderFn({mainWrapper: document.body});
+              loaderFn({ wrapper: document.body });
             }, 500);
           }
         });
